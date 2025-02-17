@@ -7,7 +7,7 @@ use OpenApi\Annotations as OA;
 /**
  * @OA\Info(
  *      version="1.0.0",
- *      title="AutoLuxAz API",
+ *      title="DpSolution API",
  *      description="Invoice management sistem API endpoints",
  * )
  *

@@ -1,0 +1,124 @@
+name: "blockchain"
+networks:
+  blockchain:
+    name: blockchain
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx.dockerfile
+    container_name: nginx_bc
+    depends_on:
+      - pgsql
+      - php
+    ports:
+      - "${APP_PORT:-80}:80"
+      - "${APP_PORT_SSL:-443}:443"
+    env_file:
+      - .env
+    volumes:
+      - ./src/be:/var/www/html/be:delegated
+      - ./.env:/var/www/html/be/.env:ro
+    networks:
+      - blockchain
+
+  php:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    container_name: php_bc
+    volumes:
+      - ./src/be:/var/www/html/be:delegated
+      - ./.env:/var/www/html/be/.env:ro
+      - ./docker-include.txt:/var/www/html/docker-include.txt:ro
+    env_file:
+      - .env
+    networks:
+      - blockchain
+
+  composer:
+    build:
+      context: .
+      dockerfile: composer.dockerfile
+    container_name: composer
+    volumes:
+      - ./src/be:/var/www/html/be:delegated
+      - ./.env:/var/www/html/be/.env:ro
+    working_dir: /var/www/html/be
+    env_file:
+      - .env
+    networks:
+      - blockchain
+
+  artisan:
+    build:
+      context: .
+      dockerfile: php.dockerfile
+    container_name: artisan
+    env_file:
+      - .env
+    volumes:
+      - ./src/be:/var/www/html/be:delegated
+      - ./.env:/var/www/html/be/.env:ro
+    working_dir: /var/www/html/be
+    entrypoint: ["php", "artisan"]
+    networks:
+      - blockchain
+
+#  phpunit:
+#    build:
+#      context: .
+#      dockerfile: php.dockerfile
+#    container_name: phpunit
+#    env_file:
+#      - .env
+#    volumes:
+#      - ./src/be:/var/www/html/be
+#    working_dir: /var/www/html/be
+#    entrypoint: ["/var/www/html/be/vendor/bin/phpunit"]
+#    networks:
+#      - blockchain
+
+  pgsql:
+    build:
+      context: .
+      dockerfile: postgres.dockerfile
+    container_name: pgsql_bc
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "6432:5432"
+    volumes:
+      - ./db/postgres:/var/lib/postgresql/data:delegated
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-myapp}
+      POSTGRES_USER: ${DB_USERNAME:-myapp}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mypassword}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USERNAME:-myapp}", "-d", "${DB_DATABASE:-myapp}"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - blockchain
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    command: redis-server --save 20 1 --loglevel warning
+    ports:
+      - "8002:6379"
+    volumes:
+      - ./db/redis:/data
+    networks:
+      - blockchain

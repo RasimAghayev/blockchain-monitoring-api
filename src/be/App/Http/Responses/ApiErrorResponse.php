@@ -14,12 +14,12 @@ abstract class ApiErrorResponse extends ApiBaseResponse
     {
         $response = parent::toResponse($request);
 
-        $data = (array) $response->getData();
+        $data = (array)$response->getData();
 
         $data['error'] = $data['result'];
         $data['result'] = [];
 
-        if(empty($data['error'])) {
+        if (empty($data['error'])) {
             $data['error'] = $this->defaultErrorMessage();
         }
 

@@ -63,7 +63,7 @@ class ErrorApiResponse extends ApiErrorResponse
         }
 
         if (is_array($error)) {
-            return $error['errors']??$error['error'];
+            return $error['errors'] ?? $error['error'];
         }
 
         if (is_object($error) && method_exists($error, '__toString')) {

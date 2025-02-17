@@ -58,7 +58,7 @@ class ApiFilter
             return null;
         }
 
-        return match($operator) {
+        return match ($operator) {
             'lk', 'nlk', 'ilk', 'inlk' => [$column, $mappedOperator, '%' . $value . '%'],
             'bt', 'nbt' => is_array($value) && count($value) === 2
                 ? [$column, $mappedOperator, $value]

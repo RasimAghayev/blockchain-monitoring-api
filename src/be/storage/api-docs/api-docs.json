@@ -1,0 +1,883 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "DpSolution API",
+        "description": "Invoice management sistem API endpoints",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000/api",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/api": {},
+        "app": {},
+        "/v1/tokens": {
+            "get": {
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Get list of tokens",
+                "description": "Returns list of tokens",
+                "operationId": "getTokensList",
+                "parameters": [
+                    {
+                        "name": "include_tags",
+                        "in": "query",
+                        "description": "Include tags in the response",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "tokenAddress[lk]",
+                        "in": "query",
+                        "description": "Search query [eq,lt,lte,gt,gte,ne,lk,ilk,nlk,inlk,bt,nbt,in,nin,json]",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "$ref": "#/components/schemas/TokenCollection"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Store new token",
+                "description": "Returns token data",
+                "operationId": "storeToken",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreTokenRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "POST"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Token successfully created"
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/TokenResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "POST"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "example": "Address information is not recorded."
+                                                }
+                                            }
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tokens/{id}": {
+            "get": {
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Get token information",
+                "description": "Returns token data",
+                "operationId": "getTokenById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Token id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens/1"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Token successfully show: 10"
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/TokenResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Resource Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens/1"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "example": "Resource not found: Token not found with ID: 10"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Update existing token",
+                "description": "Returns updated token data",
+                "operationId": "updateTokenPut",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Token id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateTokenRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "PUT"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Token successfully created"
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/TokenResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Resource Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens/1"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "PUT"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "example": "Resource not found: Token not found with ID: 10"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Delete existing token",
+                "description": "Deletes a record and returns no content",
+                "operationId": "deleteToken",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Token id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful operation"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Resource Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens/{id}"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "DELETE"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "example": "Resource not found: Token not found with ID: 10"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Update existing token",
+                "description": "Returns updated token data",
+                "operationId": "updateTokenPatch",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Token id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateTokenRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "PATCH"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Token successfully created"
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/TokenResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Resource Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/tokens/{id}"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "PATCH"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "example": "Resource not found: Token not found with ID: 10"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "403Error": {
+                "properties": {
+                    "result": {
+                        "type": "array",
+                        "items": {},
+                        "example": []
+                    },
+                    "error": {
+                        "type": "string",
+                        "example": "User does not have the right roles."
+                    }
+                },
+                "type": "object"
+            },
+            "401Error": {
+                "properties": {
+                    "result": {
+                        "type": "array",
+                        "items": {},
+                        "example": []
+                    },
+                    "error": {
+                        "type": "string",
+                        "example": "Ошибка аутентификации."
+                    }
+                },
+                "type": "object"
+            },
+            "500Error": {
+                "properties": {
+                    "result": {
+                        "type": "array",
+                        "items": {},
+                        "example": []
+                    },
+                    "error": {
+                        "type": "string",
+                        "example": "Error string"
+                    }
+                },
+                "type": "object"
+            },
+            "authData": {
+                "description": "Ответ с данными авторизованного пользователя",
+                "type": "object",
+                "allOf": [
+                    {
+                        "properties": {
+                            "result": {
+                                "properties": {
+                                    "access_token": {
+                                        "description": "JWT access token для авторизации пользователя.",
+                                        "type": "string",
+                                        "example": "eyJ0eXAiOiJKV1QiLCJI6IjIiLCJwcnYiOiIyM2JkNWM4OTQ5ZjYwMGFkYjM5ZTcwMWM0MDA4NzJkYjdhNTk3NmY3In0.dF2UutsiZaLlPB6Mo8wk3Ix3y4oXFMz8GeFX1RM53c8"
+                                    },
+                                    "token_type": {
+                                        "description": "Тип токена, обычно 'bearer'.",
+                                        "type": "string",
+                                        "example": "bearer"
+                                    },
+                                    "expires_in": {
+                                        "description": "Время действия токена в секундах.",
+                                        "type": "integer",
+                                        "example": 2073600
+                                    }
+                                },
+                                "type": "object"
+                            },
+                            "error": {
+                                "description": "Поле ошибки, будет равно null в случае успешного ответа.",
+                                "type": "string",
+                                "example": null,
+                                "nullable": true
+                            }
+                        },
+                        "type": "object"
+                    }
+                ]
+            },
+            "StoreTokenRequest": {
+                "title": "Store Token Request",
+                "description": "Store Token request body data",
+                "required": [
+                    "tokenAddress",
+                    "tokenName",
+                    "tokenSymbol",
+                    "tokenTotalSupply"
+                ],
+                "properties": {
+                    "tokenAddress": {
+                        "description": "The unique address of the token",
+                        "type": "string",
+                        "example": "0x1234567890abcdef1234567890abcdef12345678"
+                    },
+                    "tokenName": {
+                        "description": "The name of the token",
+                        "type": "string",
+                        "example": "MyToken"
+                    },
+                    "tokenSymbol": {
+                        "description": "The symbol of the token",
+                        "type": "string",
+                        "example": "MTK"
+                    },
+                    "tokenTotalSupply": {
+                        "description": "Total supply of the token (decimal value supported)",
+                        "type": "number",
+                        "format": "decimal",
+                        "example": 1000000.5
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateTokenRequest": {
+                "title": "Update Token Request",
+                "description": "Update Token request body data",
+                "required": [
+                    "tokenAddress",
+                    "tokenName",
+                    "tokenSymbol",
+                    "tokenTotalSupply"
+                ],
+                "properties": {
+                    "tokenAddress": {
+                        "description": "The unique address of the token",
+                        "type": "string",
+                        "example": "0x1234567890abcdef1234567890abcdef12345678"
+                    },
+                    "tokenName": {
+                        "description": "The name of the token",
+                        "type": "string",
+                        "example": "MyToken"
+                    },
+                    "tokenSymbol": {
+                        "description": "The symbol of the token",
+                        "type": "string",
+                        "example": "MTK"
+                    },
+                    "tokenTotalSupply": {
+                        "description": "Total supply of the token (decimal value supported)",
+                        "type": "number",
+                        "format": "decimal",
+                        "example": 1000000.5
+                    }
+                },
+                "type": "object"
+            },
+            "TokenCollection": {
+                "title": "Token Collection",
+                "description": "Token collection",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Token successfully full list."
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TokenResource"
+                        }
+                    },
+                    "meta": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "from": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "last_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "to": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 50
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "links": {
+                        "properties": {
+                            "self": {
+                                "type": "string",
+                                "example": "http://example.com/api/tokens?page=1"
+                            },
+                            "first": {
+                                "type": "string",
+                                "example": "http://example.com/api/tokens?page=1"
+                            },
+                            "last": {
+                                "type": "string",
+                                "example": "http://example.com/api/tokens?page=4"
+                            },
+                            "prev": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "next": {
+                                "type": "string",
+                                "example": "http://example.com/api/tokens?page=2"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "TokenResource": {
+                "title": "Token Resource",
+                "description": "Token resource representation",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "tokenAddress": {
+                        "description": "The unique blockchain address of the token",
+                        "type": "string",
+                        "example": "0x1234567890abcdef1234567890abcdef12345678"
+                    },
+                    "tokenName": {
+                        "description": "The name of the token",
+                        "type": "string",
+                        "example": "MyToken"
+                    },
+                    "tokenSymbol": {
+                        "description": "The symbol of the token",
+                        "type": "string",
+                        "example": "MTK"
+                    },
+                    "tokenTotalSupply": {
+                        "description": "Total supply of the token (decimal value supported)",
+                        "type": "number",
+                        "format": "decimal",
+                        "example": 1000000.5
+                    },
+                    "createdAt": {
+                        "description": "Timestamp when the token was created",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-01-01 00:00:00"
+                    },
+                    "updatedAt": {
+                        "description": "Timestamp when the token was last updated",
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-01-02 12:30:00"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "apiAuth": {
+                "type": "http",
+                "description": "Login with email and password to get the authentication token",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Tokens",
+            "description": "API Endpoints of Tokens Management System"
+        }
+    ]
+}

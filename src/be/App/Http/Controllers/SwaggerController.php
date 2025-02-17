@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use OpenApi\Annotations as OA;
 
 /**
- *  @OA\PathItem(path="app"),
+ * @OA\PathItem(path="app"),
  *
  * @OA\Schema(
  *        schema="403Error",
@@ -72,7 +72,6 @@ use OpenApi\Annotations as OA;
  * )
  *
  */
-
 class SwaggerController
 {
 

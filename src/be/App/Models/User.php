@@ -38,19 +38,6 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
-
-    /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *
      * @return mixed
@@ -70,13 +57,17 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-
     /**
-     * @return HasMany
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
      */
-    public function tasks(): HasMany
+    protected function casts(): array
     {
-        return $this->hasMany(Task::class);
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
     }
 
 }

@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('tokens', function (Blueprint $table) {
+        Schema::create('token_holders', function (Blueprint $table) {
             $table->id();
             $table->string('token_address');
             $table->string('holder_address');
@@ -18,6 +18,6 @@ return new class extends Migration {
 
     public function down()
     {
-        Schema::dropIfExists('tokens');
+        Schema::dropIfExists('token_holders');
     }
 };

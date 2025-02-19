@@ -7,9 +7,15 @@ use App\Filters\ApiFilter;
 class TokenFilters extends ApiFilter
 {
     protected array $safeParms = [
-        'address' => ['eq', 'lk', 'nlk', 'ilk', 'inlk'],
-        'name' => ['eq', 'lk', 'nlk', 'ilk', 'inlk'],
-        'symbol' => ['eq', 'lk', 'nlk', 'ilk', 'inlk'],
-        'total_supply' => ['eq', 'lt', 'lte', 'gt', 'gte', 'ne', 'bt', 'nbt', 'in', 'nin'],
+        'tokenAddress' => ['eq', 'lk', 'nlk', 'ilk', 'inlk'],
+        'tokenName' => ['eq', 'lk', 'nlk', 'ilk', 'inlk'],
+        'tokenSymbol' => ['eq', 'lk', 'nlk', 'ilk', 'inlk'],
+        'tokenTotalSupply' => ['eq', 'lt', 'lte', 'gt', 'gte', 'ne', 'bt', 'nbt', 'in', 'nin'],
+    ];
+    protected array $columnMap = [
+        'tokenAddress' => 'address',
+        'tokenName' => 'name',
+        'tokenSymbol' => 'symbol',
+        'tokenTotalSupply' => 'total_supply',
     ];
 }

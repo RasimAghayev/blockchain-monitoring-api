@@ -35,4 +35,7 @@ return [
         ],
     ],
 
+    'blockchain' => [
+        'base_url' => env('API_BLOCKCHAIN_URL', 'https://api.blockchain.com/v3'),
+    ],
 ];

@@ -3,17 +3,24 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tokens;
 
+use App\Helpers\CachedApiCallHelper;
 use App\Helpers\TransactionHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Tokens\{Requests\StoreTokenRequest,
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Tokens\{Models\Token,
+    Models\TokenHolder,
+    Requests\StoreTokenRequest,
     Requests\UpdateTokenRequest,
     Resources\TokenCollection,
     Resources\TokenResource,
     Services\TokenServiceInterface};
 use App\Http\Responses\{ErrorApiResponse, ErrorValidationResponse, SuccessApiResponse};
+use App\Services\Blockchain\BlockchainService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use OpenApi\Annotations as OA;
 
 /**
@@ -28,7 +35,8 @@ class TokenController extends Controller
     use AuthorizesRequests;
 
     public function __construct(
-        private readonly TokenServiceInterface $tokenService
+        private readonly TokenServiceInterface $tokenService,
+        private readonly BlockchainService     $blockchainService,
     )
     {
     }
@@ -349,76 +357,6 @@ class TokenController extends Controller
     }
 
     /**
-     * @OA\Delete(
-     *      path="/v1/tokens/{id}",
-     *      operationId="deleteToken",
-     *      tags={"Tokens"},
-     *      summary="Delete existing token",
-     *      description="Deletes a record and returns no content",
-     *      @OA\Parameter(
-     *          name="id",
-     *          description="Token id",
-     *          required=true,
-     *          in="path",
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *      @OA\Response(
-     *          response=204,
-     *          description="Successful operation"
-     *       ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthenticated",
-     *      ),
-     *      @OA\Response(
-     *          response=403,
-     *          description="Forbidden"
-     *      ),
-     *       @OA\Response(
-     *           response=404,
-     *           description="Resource Not Found",
-     *           @OA\JsonContent(
-     *               type="object",
-     *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
-     *               @OA\Property(property="path", type="string", example="api/v1/tokens/{id}"),
-     *               @OA\Property(property="method", type="string", example="DELETE"),
-     *               @OA\Property(
-     *                   property="error",
-     *                   type="object",
-     *                   example="Resource not found: Token not found with ID: 10"
-     *               ),
-     *               @OA\Property(property="result",type="object",example={})
-     *             )
-     *           )
-     *       )
-     * )
-     */
-    public function destroy(int $id): SuccessApiResponse|ErrorApiResponse
-    {
-        return TransactionHelper::handleWithTransaction(function () use ($id) {
-            $token = $this->tokenService->getTokenById($id);
-            if (is_string($token)) {
-                throw new ModelNotFoundException($token);
-            }
-//            $this->authorize('delete', $token);
-            $this->tokenService->deleteToken($id);
-
-            return [
-                'message' => 'Token successfully deleted'
-            ];
-        }, 204);
-    }
-
-    /**
-     * Delete token
-     *
-     * @param int $id
-     * @return SuccessApiResponse|ErrorApiResponse
-     */
-
-    /**
      * @OA\Put(
      *      path="/v1/tokens/{id}",
      *      operationId="updateTokenPut",
@@ -487,6 +425,218 @@ class TokenController extends Controller
      */
     private function updateA()
     {
+    }
+    /**
+     * Delete token
+     *
+     * @param int $id
+     * @return SuccessApiResponse|ErrorApiResponse
+     */
+    /**
+     * @OA\Delete(
+     *      path="/v1/tokens/{id}",
+     *      operationId="deleteToken",
+     *      tags={"Tokens"},
+     *      summary="Delete existing token",
+     *      description="Deletes a record and returns no content",
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Token id",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=204,
+     *          description="Successful operation"
+     *       ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      ),
+     *       @OA\Response(
+     *           response=404,
+     *           description="Resource Not Found",
+     *           @OA\JsonContent(
+     *               type="object",
+     *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
+     *               @OA\Property(property="path", type="string", example="api/v1/tokens/{id}"),
+     *               @OA\Property(property="method", type="string", example="DELETE"),
+     *               @OA\Property(
+     *                   property="error",
+     *                   type="object",
+     *                   example="Resource not found: Token not found with ID: 10"
+     *               ),
+     *               @OA\Property(property="result",type="object",example={})
+     *             )
+     *           )
+     *       )
+     * )
+     */
+    public function destroy(int $id): SuccessApiResponse|ErrorApiResponse
+    {
+        return TransactionHelper::handleWithTransaction(function () use ($id) {
+            $token = $this->tokenService->getTokenById($id);
+            if (is_string($token)) {
+                throw new ModelNotFoundException($token);
+            }
+//            $this->authorize('delete', $token);
+            $this->tokenService->deleteToken($id);
+
+            return [
+                'message' => 'Token successfully deleted'
+            ];
+        }, 204);
+    }
+
+    /**
+     * Get token information
+     *
+     * @param string $address
+     * @return JsonResponse
+     *
+     * @OA\Get(
+     *      path="/v1/tokens/{address}/info",
+     *      operationId="getTokenInfo",
+     *      tags={"Tokens"},
+     *      summary="Get token information",
+     *      description="Returns token information for a given address",
+     *      @OA\Parameter(
+     *          name="address",
+     *          description="Token address",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="name", type="string", example="Ethereum"),
+     *              @OA\Property(property="symbol", type="string", example="ETH"),
+     *              @OA\Property(property="total_supply", type="string", example="115714953")
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Token not found"
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server error"
+     *      )
+     * )
+     */
+    public function getTokenInfo(string $address): JsonResponse
+    {
+        return CachedApiCallHelper::cachedApiCall("token_info_{$address}", 10, function () use ($address) {
+            $tokenInfo = $this->blockchainService->getTokenInfo($address);
+
+            if ($tokenInfo->status() === 200) {
+                $data = $tokenInfo->getData(true);
+                $this->storeOrUpdateToken($address, $data);
+            }
+
+            return $tokenInfo;
+        });
+    }
+    private function storeOrUpdateToken(string $address, array $tokenData): void
+    {
+        Token::updateOrCreate(
+            ['address' => $address],
+            [
+                'name' => $tokenData['name'] ?? 'Unknown',
+                'symbol' => $tokenData['symbol'] ?? 'N/A',
+                'total_supply' => $tokenData['total_supply'] ?? 0,
+            ]
+        );
+    }
+    /**
+     * Get top token holders
+     *
+     * @param string $address
+     * @return JsonResponse
+     *
+     * @OA\Get(
+     *      path="/v1/tokens/{address}/top-holders",
+     *      operationId="getTopHolders",
+     *      tags={"Tokens"},
+     *      summary="Get top token holders",
+     *      description="Returns top holders for a given token address",
+     *      @OA\Parameter(
+     *          name="address",
+     *          description="Token address",
+     *          required=true,
+     *          in="path",
+     *          @OA\Schema(
+     *              type="string"
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *          @OA\JsonContent(
+     *              type="object",
+     *              @OA\Property(property="token_address", type="string", example="0x123456789abcdef..."),
+     *              @OA\Property(
+     *                  property="top_holders",
+     *                  type="array",
+     *                  @OA\Items(
+     *                      type="object",
+     *                      @OA\Property(property="address", type="string", example="0xabcdef123456..."),
+     *                      @OA\Property(property="balance", type="string", example="1000000000000000000"),
+     *                      @OA\Property(property="percentage", type="string", example="10.5")
+     *                  )
+     *              )
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response=404,
+     *          description="Token not found"
+     *      ),
+     *      @OA\Response(
+     *          response=500,
+     *          description="Server error"
+     *      )
+     * )
+     */
+    public function getTopHolders(string $address): JsonResponse
+    {
+        return CachedApiCallHelper::cachedApiCall("top_holders_{$address}", 10, function () use ($address) {
+            $topHolders = $this->blockchainService->getTopHolders($address);
+
+            if ($topHolders->status() === 200) {
+                $data = $topHolders->getData(true);
+                $this->storeOrUpdateTokenHolders($address, $data['top_holders'] ?? []);
+            }
+
+            return $topHolders;
+        });
+    }
+
+    private function storeOrUpdateTokenHolders(string $tokenAddress, array $holders): void
+    {
+        TokenHolder::where('token_address', $tokenAddress)->delete();
+
+        $holdersData = array_map(function ($holder) use ($tokenAddress) {
+            return [
+                'token_address' => $tokenAddress,
+                'holder_address' => $holder['address'],
+                'balance' => $holder['balance'],
+                'percentage' => $holder['percentage']
+            ];
+        }, $holders);
+
+        TokenHolder::insert($holdersData);
     }
 
 }

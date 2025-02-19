@@ -28,4 +28,11 @@ Route::group([
         ->where('id', '[0-9]+')
         ->name('tokens.destroy');
 
+    Route::get('{address}/info', [TokenController::class, 'getTokenInfo'])
+        ->where('address', '[A-Za-z0-9]+')
+        ->name('tokens.info');
+
+    Route::get('{address}/top-holders', [TokenController::class, 'getTopHolders'])
+        ->where('address', '[A-Za-z0-9]+')
+        ->name('tokens.top.holders');
 });

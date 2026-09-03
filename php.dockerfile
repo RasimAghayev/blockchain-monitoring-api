@@ -1,5 +1,5 @@
 # Use the official PHP image with FPM
-FROM php:8.4-fpm AS build
+FROM php:8.5-fpm AS build
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Create a smaller final image
-FROM php:8.4-fpm
+FROM php:8.5-fpm
 
 # Copy necessary artifacts from the build stage
 COPY --from=build /usr/local/bin/composer /usr/local/bin/composer

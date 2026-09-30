@@ -162,7 +162,7 @@ class TransactionController extends Controller
      *                   type="object",
      *                   @OA\AdditionalProperties(
      *                       type="array",
-     *                       @OA\Items(type="string", example="Şirkət məlumatları qeyd edilməyib.")
+     *                       @OA\Items(type="string", example="Company information is not recorded.")
      *                   )
      *               ),
      *               @OA\Property(property="result",type="object",example={})

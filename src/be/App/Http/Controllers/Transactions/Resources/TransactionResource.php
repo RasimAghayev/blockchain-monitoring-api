@@ -19,7 +19,7 @@ use OpenApi\Annotations as OA;
  *         property="type",
  *         type="object",
  *         @OA\Property(property="value", type="integer", example=1),
- *         @OA\Property(property="label", type="string", example="Fərdi")
+ *         @OA\Property(property="label", type="string", example="Personal")
  *     ),
  *     @OA\Property(property="createdAt", type="string", format="date-time", example="2023-01-01 00:00:00"),
  *     @OA\Property(property="updatedAt", type="string", format="date-time", example="2023-01-01 00:00:00")

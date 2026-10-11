@@ -12,6 +12,7 @@ class TokenFilters extends ApiFilter
         'tokenSymbol' => ['eq', 'lk', 'nlk', 'ilk', 'inlk'],
         'tokenTotalSupply' => ['eq', 'lt', 'lte', 'gt', 'gte', 'ne', 'bt', 'nbt', 'in', 'nin'],
     ];
+
     protected array $columnMap = [
         'tokenAddress' => 'address',
         'tokenName' => 'name',

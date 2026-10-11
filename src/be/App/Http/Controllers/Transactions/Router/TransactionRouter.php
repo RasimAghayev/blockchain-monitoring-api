@@ -4,8 +4,8 @@ use App\Http\Controllers\Transactions\TransactionController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
-//    'middleware' => ['api', 'auth:api'],
-    'prefix' => 'transactions'
+    //    'middleware' => ['api', 'auth:api'],
+    'prefix' => 'transactions',
 ], function () {
     // List and search
     Route::get('/', [TransactionController::class, 'index'])

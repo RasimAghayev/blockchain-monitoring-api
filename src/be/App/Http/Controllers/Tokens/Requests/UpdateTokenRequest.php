@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Tokens\Requests;
@@ -17,6 +18,7 @@ use OpenApi\Annotations as OA;
  *     description="Update Token request body data",
  *      type="object",
  *      required={"tokenAddress", "tokenName", "tokenSymbol", "tokenTotalSupply"},
+ *
  *      @OA\Property(
  *          property="tokenAddress",
  *          type="string",
@@ -61,17 +63,17 @@ class UpdateTokenRequest extends ApiFormRequest
 
         if ($this->method() === 'PUT') {
             foreach ($rules as $field => &$fieldRules) {
-                if (!is_array($fieldRules)) {
+                if (! is_array($fieldRules)) {
                     $fieldRules = [$fieldRules];
                 }
 
-                if (!in_array('required', $fieldRules)) {
+                if (! in_array('required', $fieldRules)) {
                     array_unshift($fieldRules, 'required');
                 }
             }
         } else {
             foreach ($rules as $field => &$fieldRules) {
-                if (!is_array($fieldRules)) {
+                if (! is_array($fieldRules)) {
                     $fieldRules = [$fieldRules];
                 }
                 array_unshift($fieldRules, 'sometimes');
@@ -94,7 +96,6 @@ class UpdateTokenRequest extends ApiFormRequest
     /**
      * Convert validated data to DTO
      *
-     * @return TokenDTO
      * @throws ModelNotFoundException
      */
     public function toDTO(): TokenDTO
@@ -123,7 +124,6 @@ class UpdateTokenRequest extends ApiFormRequest
     /**
      * Get token instance
      *
-     * @return Token
      * @throws ModelNotFoundException
      */
     protected function getToken(): Token
@@ -135,5 +135,4 @@ class UpdateTokenRequest extends ApiFormRequest
 
         return $this->token;
     }
-
 }

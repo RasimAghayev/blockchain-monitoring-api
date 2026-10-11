@@ -10,10 +10,6 @@ class CompressResponse
 {
     /**
      * Handle an incoming request.
-     *
-     * @param Request $request
-     * @param Closure $next
-     * @return mixed
      */
     public function handle(Request $request, Closure $next): mixed
     {
@@ -24,7 +20,7 @@ class CompressResponse
         }
 
         if (strpos($request->header('Accept-Encoding'), 'gzip') !== false
-            && !in_array('Content-Encoding', $response->headers->keys())) {
+            && ! in_array('Content-Encoding', $response->headers->keys())) {
 
             $output = $response->getContent();
 
@@ -35,7 +31,7 @@ class CompressResponse
                     $response->setContent($compressed);
                     $response->headers->add([
                         'Content-Encoding' => 'gzip',
-                        'X-Compression-Rate' => round((1 - strlen($compressed) / strlen($output)) * 100, 2) . '%'
+                        'X-Compression-Rate' => round((1 - strlen($compressed) / strlen($output)) * 100, 2).'%',
                     ]);
                 }
             }

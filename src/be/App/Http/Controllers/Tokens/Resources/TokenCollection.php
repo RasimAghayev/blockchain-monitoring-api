@@ -12,6 +12,7 @@ use OpenApi\Annotations as OA;
  *     schema="TokenCollection",
  *     title="Token Collection",
  *     description="Token collection",
+ *
  *       @OA\Property(
  *           property="message",
  *           type="string",
@@ -20,8 +21,10 @@ use OpenApi\Annotations as OA;
  *     @OA\Property(
  *         property="data",
  *         type="array",
+ *
  *         @OA\Items(ref="#/components/schemas/TokenResource")
  *     ),
+ *
  *     @OA\Property(
  *         property="meta",
  *         type="object",
@@ -56,9 +59,6 @@ class TokenCollection extends ResourceCollection
 
     /**
      * Transform the resource collection into an array.
-     *
-     * @param Request $request
-     * @return array
      */
     public function toArray(Request $request): array
     {
@@ -75,5 +75,4 @@ class TokenCollection extends ResourceCollection
             ],
         ];
     }
-
 }

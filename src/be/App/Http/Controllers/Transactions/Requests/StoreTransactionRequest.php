@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Transactions\Requests;
@@ -15,6 +16,7 @@ use OpenApi\Annotations as OA;
  *     description="Store Transaction request body data",
  *     type="object",
  *     required={"name", "type"},
+ *
  *     @OA\Property(
  *              property="name",
  *              type="string",
@@ -55,9 +57,6 @@ class StoreTransactionRequest extends ApiFormRequest
         return $this->getCommonMessages();
     }
 
-    /**
-     * @return TransactionDTO
-     */
     public function toDTO(): TransactionDTO
     {
         return TransactionDTO::fromRequest($this->validated());

@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers\Transactions\Repositories;
 
-use App\Http\Controllers\Transactions\{DTOs\TransactionDTO, Models\Transaction};
+use App\Http\Controllers\Transactions\DTOs\TransactionDTO;
+use App\Http\Controllers\Transactions\Models\Transaction;
 use App\Services\Blockchain\BlockchainService;
 use App\Services\Telegram\TelegramService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -11,24 +12,17 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class TransactionRepository implements TransactionRepositoryInterface
 {
     public function __construct(
-        protected Transaction       $transactionModel,
-        protected TelegramService   $telegramService,
+        protected Transaction $transactionModel,
+        protected TelegramService $telegramService,
         protected BlockchainService $blockchainService
-    )
-    {
-    }
+    ) {}
 
     /**
      * Get filtered transactions with pagination
-     *
-     * @param array $queryItems
-     * @param bool $includeTags
-     * @param int $perPage
-     * @return LengthAwarePaginator
      */
     public function getFilteredTransactions(array $queryItems,
-                                            bool  $includeTags,
-                                            int   $perPage): LengthAwarePaginator
+        bool $includeTags,
+        int $perPage): LengthAwarePaginator
     {
         $query = $this->transactionModel->where($queryItems);
 
@@ -42,9 +36,6 @@ class TransactionRepository implements TransactionRepositoryInterface
 
     /**
      * Create new transaction
-     *
-     * @param TransactionDTO $transactionDTO
-     * @return Transaction
      */
     public function create(TransactionDTO $transactionDTO): Transaction
     {
@@ -53,10 +44,6 @@ class TransactionRepository implements TransactionRepositoryInterface
 
     /**
      * Update existing transaction
-     *
-     * @param int $id
-     * @param TransactionDTO $transactionDTO
-     * @return Transaction
      */
     public function update(int $id, TransactionDTO $transactionDTO): Transaction
     {
@@ -69,15 +56,13 @@ class TransactionRepository implements TransactionRepositoryInterface
     /**
      * Find transaction by ID
      *
-     * @param int $id
-     * @return Transaction|string
      * @throws ModelNotFoundException
      */
     public function findOrFail(int $id): Transaction|string
     {
         $transaction = $this->transactionModel->find($id);
 
-        if (!$transaction) {
+        if (! $transaction) {
             return "Transaction not found with ID: {$id}";
         }
 
@@ -86,16 +71,12 @@ class TransactionRepository implements TransactionRepositoryInterface
 
     /**
      * Delete transaction
-     *
-     * @param int $id
-     * @return void
      */
     public function delete(int $id): void
     {
         $transaction = $this->findOrFail($id);
         $transaction->delete();
     }
-
 
     public function storeTokenTransactions(): void
     {
@@ -121,13 +102,13 @@ class TransactionRepository implements TransactionRepositoryInterface
 
     private function prepareTransactionMessage(array $tx): string
     {
-        return "🔔 *New Transaction Detected!* 🔔\n\n" .
-            "🔹 *Hash:* [{$tx['hash']}](https://etherscan.io/tx/{$tx['hash']})\n" .
-            "📍 *From:* `{$tx['from']}`\n" .
-            "🎯 *To:* `{$tx['to']}`\n" .
-            "💰 *Amount:* `{$tx['amount']}` ETH\n" .
-            "⛽ *Gas Fee:* `{$tx['gas_fee']}` Gwei\n" .
-            "🕒 *Time:* `" . date('Y-m-d H:i:s', $tx['timestamp']) . "`\n\n" .
-            "#Blockchain #Crypto";
+        return "🔔 *New Transaction Detected!* 🔔\n\n".
+            "🔹 *Hash:* [{$tx['hash']}](https://etherscan.io/tx/{$tx['hash']})\n".
+            "📍 *From:* `{$tx['from']}`\n".
+            "🎯 *To:* `{$tx['to']}`\n".
+            "💰 *Amount:* `{$tx['amount']}` ETH\n".
+            "⛽ *Gas Fee:* `{$tx['gas_fee']}` Gwei\n".
+            '🕒 *Time:* `'.date('Y-m-d H:i:s', $tx['timestamp'])."`\n\n".
+            '#Blockchain #Crypto';
     }
 }

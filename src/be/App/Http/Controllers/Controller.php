@@ -27,7 +27,6 @@ use OpenApi\Annotations as OA;
  *      bearerFormat="JWT",
  *      securityScheme="apiAuth",
  * )
- *
  */
 abstract class Controller
 {

@@ -8,9 +8,6 @@ trait TransactionPaginationLinksTrait
 {
     use PaginationLinksTrait;
 
-    /**
-     * @return array
-     */
     protected function getMetaData(): array
     {
         return [

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Transactions\Requests;
@@ -16,6 +17,7 @@ use OpenApi\Annotations as OA;
  *     title="Update Transaction Request",
  *     description="Update Transaction request body data",
  *     type="object",
+ *
  *      @OA\Property(
  *               property="name",
  *               type="string",
@@ -46,17 +48,17 @@ class UpdateTransactionRequest extends ApiFormRequest
 
         if ($this->method() === 'PUT') {
             foreach ($rules as $field => &$fieldRules) {
-                if (!is_array($fieldRules)) {
+                if (! is_array($fieldRules)) {
                     $fieldRules = [$fieldRules];
                 }
 
-                if (!in_array('required', $fieldRules)) {
+                if (! in_array('required', $fieldRules)) {
                     array_unshift($fieldRules, 'required');
                 }
             }
         } else {
             foreach ($rules as $field => &$fieldRules) {
-                if (!is_array($fieldRules)) {
+                if (! is_array($fieldRules)) {
                     $fieldRules = [$fieldRules];
                 }
                 array_unshift($fieldRules, 'sometimes');
@@ -79,7 +81,6 @@ class UpdateTransactionRequest extends ApiFormRequest
     /**
      * Convert validated data to DTO
      *
-     * @return TransactionDTO
      * @throws ModelNotFoundException
      */
     public function toDTO(): TransactionDTO
@@ -108,7 +109,6 @@ class UpdateTransactionRequest extends ApiFormRequest
     /**
      * Get transaction instance
      *
-     * @return Transaction
      * @throws ModelNotFoundException
      */
     protected function getTransaction(): Transaction
@@ -120,5 +120,4 @@ class UpdateTransactionRequest extends ApiFormRequest
 
         return $this->transaction;
     }
-
 }

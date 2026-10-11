@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Tokens;
@@ -6,21 +7,21 @@ namespace App\Http\Controllers\Tokens;
 use App\Helpers\CachedApiCallHelper;
 use App\Helpers\TransactionHelper;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Tokens\{Models\Token,
-    Models\TokenHolder,
-    Requests\StoreTokenRequest,
-    Requests\UpdateTokenRequest,
-    Resources\TokenCollection,
-    Resources\TokenResource,
-    Services\TokenServiceInterface};
-use App\Http\Responses\{ErrorApiResponse, ErrorValidationResponse, SuccessApiResponse};
+use App\Http\Controllers\Tokens\Models\Token;
+use App\Http\Controllers\Tokens\Models\TokenHolder;
+use App\Http\Controllers\Tokens\Requests\StoreTokenRequest;
+use App\Http\Controllers\Tokens\Requests\UpdateTokenRequest;
+use App\Http\Controllers\Tokens\Resources\TokenCollection;
+use App\Http\Controllers\Tokens\Resources\TokenResource;
+use App\Http\Controllers\Tokens\Services\TokenServiceInterface;
+use App\Http\Responses\ErrorApiResponse;
+use App\Http\Responses\ErrorValidationResponse;
+use App\Http\Responses\SuccessApiResponse;
 use App\Services\Blockchain\BlockchainService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use OpenApi\Annotations as OA;
 
 /**
@@ -28,6 +29,7 @@ use OpenApi\Annotations as OA;
  *      name="Tokens",
  *      description="API Endpoints of Tokens Management System"
  * )
+ *
  * @method static make(string[] $array, int $int)
  */
 class TokenController extends Controller
@@ -36,16 +38,11 @@ class TokenController extends Controller
 
     public function __construct(
         private readonly TokenServiceInterface $tokenService,
-        private readonly BlockchainService     $blockchainService,
-    )
-    {
-    }
+        private readonly BlockchainService $blockchainService,
+    ) {}
 
     /**
      * Get list of tokens
-     *
-     * @param Request $request
-     * @return TokenCollection|ErrorApiResponse|SuccessApiResponse
      */
 
     /**
@@ -55,39 +52,48 @@ class TokenController extends Controller
      *      tags={"Tokens"},
      *      summary="Get list of tokens",
      *      description="Returns list of tokens",
+     *
      *      @OA\Parameter(
      *          name="include_tags",
      *          in="query",
      *          description="Include tags in the response",
      *          required=false,
+     *
      *          @OA\Schema(
      *              type="boolean"
      *          )
      *      ),
+     *
      *        @OA\Parameter(
      *            name="tokenAddress[lk]",
      *            in="query",
      *            description="Search query [eq,lt,lte,gt,gte,ne,lk,ilk,nlk,inlk,bt,nbt,in,nin,json]",
      *            required=false,
+     *
      *            @OA\Schema(
      *                type="string"
      *            )
      *        ),
+     *
      *      @OA\Parameter(
      *          name="per_page",
      *          in="query",
      *          description="Number of items per page",
      *          required=false,
+     *
      *          @OA\Schema(
      *              type="integer",
      *              default=15
      *          )
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
+     *
      *           @OA\JsonContent(
      *               type="object",
+     *
      *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *               @OA\Property(property="path", type="string", example="api/v1/tokens"),
      *               @OA\Property(property="method", type="string", example="GET"),
@@ -95,6 +101,7 @@ class TokenController extends Controller
      *               @OA\Property(property="result", type="object", ref="#/components/schemas/TokenCollection")
      *           )
      *      ),
+     *
      *      @OA\Response(response=401,description="Unauthenticated",),
      *      @OA\Response(response=403,description="Forbidden")
      * )
@@ -102,21 +109,19 @@ class TokenController extends Controller
     public function index(Request $request): TokenCollection|SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request) {
-//            $this->authorize('viewAny', Token::class);
+            //            $this->authorize('viewAny', Token::class);
             $tokens = $this->tokenService->getTokens(
                 request: $request,
                 includeTags: $request->boolean('include_tags'),
                 perPage: $request->integer('per_page', 15)
             );
+
             return new TokenCollection($tokens);
         });
     }
 
     /**
      * Create new token
-     *
-     * @param StoreTokenRequest $request
-     * @return ErrorApiResponse|ErrorValidationResponse|SuccessApiResponse
      */
 
     /**
@@ -126,15 +131,20 @@ class TokenController extends Controller
      *      tags={"Tokens"},
      *      summary="Store new token",
      *      description="Returns token data",
+     *
      *      @OA\RequestBody(
      *          required=true,
+     *
      *          @OA\JsonContent(ref="#/components/schemas/StoreTokenRequest")
      *      ),
+     *
      *      @OA\Response(
      *          response=201,
      *          description="Successful operation",
+     *
      *           @OA\JsonContent(
      *               type="object",
+     *
      *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *               @OA\Property(property="path", type="string", example="api/v1/tokens"),
      *               @OA\Property(property="method", type="string", example="POST"),
@@ -147,24 +157,30 @@ class TokenController extends Controller
      *                  )
      *           )
      *       ),
+     *
      *      @OA\Response(response=401,description="Unauthenticated",),
      *      @OA\Response(response=403,description="Forbidden"),
      *      @OA\Response(
      *          response=422,
      *          description="Unprocessable Entity",
+     *
      *           @OA\JsonContent(
      *               type="object",
+     *
      *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *               @OA\Property(property="path", type="string", example="api/v1/tokens"),
      *               @OA\Property(property="method", type="string", example="POST"),
      *               @OA\Property(
      *                   property="error",
      *                   type="object",
+     *
      *                   @OA\AdditionalProperties(
      *                       type="array",
+     *
      *                       @OA\Items(type="string", example="Address information is not recorded.")
      *                   )
      *               ),
+     *
      *               @OA\Property(property="result",type="object",example={})
      *           )
      *      )
@@ -173,21 +189,18 @@ class TokenController extends Controller
     public function store(StoreTokenRequest $request): SuccessApiResponse|ErrorApiResponse|ErrorValidationResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request) {
-//            $this->authorize('createAny', Token::class);
+            //            $this->authorize('createAny', Token::class);
             $token = $this->tokenService->createToken($request->toDTO());
 
             return [
                 'message' => 'Token successfully created',
-                'data' => new TokenResource($token)
+                'data' => new TokenResource($token),
             ];
         }, 201);
     }
 
     /**
      * Get token by ID
-     *
-     * @param int $id
-     * @return SuccessApiResponse|ErrorApiResponse
      */
     /**
      * @OA\Get(
@@ -196,20 +209,25 @@ class TokenController extends Controller
      *      tags={"Tokens"},
      *      summary="Get token information",
      *      description="Returns token data",
+     *
      *      @OA\Parameter(
      *          name="id",
      *          description="Token id",
      *          required=true,
      *          in="path",
+     *
      *          @OA\Schema(
      *              type="integer"
      *          )
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *              @OA\Property(property="path", type="string", example="api/v1/tokens/1"),
      *              @OA\Property(property="method", type="string", example="GET"),
@@ -222,6 +240,7 @@ class TokenController extends Controller
      *                 )
      *          )
      *       ),
+     *
      *      @OA\Response(
      *          response=401,
      *          description="Unauthenticated",
@@ -233,8 +252,10 @@ class TokenController extends Controller
      *      @OA\Response(
      *          response=404,
      *          description="Resource Not Found",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *              @OA\Property(property="path", type="string", example="api/v1/tokens/1"),
      *              @OA\Property(property="method", type="string", example="GET"),
@@ -256,20 +277,17 @@ class TokenController extends Controller
             if (is_string($token)) {
                 throw new ModelNotFoundException($token);
             }
-//            $this->authorize('view', Token::class);
+
+            //            $this->authorize('view', Token::class);
             return [
-                'message' => 'Token successfully show: ' . $id,
-                'data' => new TokenResource($token)
+                'message' => 'Token successfully show: '.$id,
+                'data' => new TokenResource($token),
             ];
         });
     }
 
     /**
      * Update existing token
-     *
-     * @param UpdateTokenRequest $request
-     * @param int $id
-     * @return SuccessApiResponse|ErrorApiResponse
      */
 
     /**
@@ -279,24 +297,31 @@ class TokenController extends Controller
      *      tags={"Tokens"},
      *      summary="Update existing token",
      *      description="Returns updated token data",
+     *
      *      @OA\Parameter(
      *          name="id",
      *          description="Token id",
      *          required=true,
      *          in="path",
+     *
      *          @OA\Schema(
      *              type="integer"
      *          )
      *      ),
+     *
      *      @OA\RequestBody(
      *          required=true,
+     *
      *          @OA\JsonContent(ref="#/components/schemas/UpdateTokenRequest")
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
+     *
      *             @OA\JsonContent(
      *                 type="object",
+     *
      *                 @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *                 @OA\Property(property="path", type="string", example="api/v1/tokens"),
      *                 @OA\Property(property="method", type="string", example="PATCH"),
@@ -309,6 +334,7 @@ class TokenController extends Controller
      *                    )
      *             )
      *       ),
+     *
      *      @OA\Response(
      *          response=401,
      *          description="Unauthenticated",
@@ -320,8 +346,10 @@ class TokenController extends Controller
      *       @OA\Response(
      *           response=404,
      *           description="Resource Not Found",
+     *
      *           @OA\JsonContent(
      *               type="object",
+     *
      *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *               @OA\Property(property="path", type="string", example="api/v1/tokens/{id}"),
      *               @OA\Property(property="method", type="string", example="PATCH"),
@@ -333,6 +361,7 @@ class TokenController extends Controller
      *               @OA\Property(property="result",type="object",example={})
      *           )
      *       ),
+     *
      *        @OA\Response(
      *            response=422,
      *            description="Unprocessable Entity"
@@ -346,12 +375,12 @@ class TokenController extends Controller
             if (is_string($token)) {
                 throw new ModelNotFoundException($token);
             }
-//            $this->authorize('update', $token);
+            //            $this->authorize('update', $token);
             $updatedToken = $this->tokenService->updateToken($id, $request->toDTO());
 
             return [
                 'message' => 'Token successfully updated',
-                'data' => new TokenResource($updatedToken)
+                'data' => new TokenResource($updatedToken),
             ];
         });
     }
@@ -363,24 +392,31 @@ class TokenController extends Controller
      *      tags={"Tokens"},
      *      summary="Update existing token",
      *      description="Returns updated token data",
+     *
      *      @OA\Parameter(
      *          name="id",
      *          description="Token id",
      *          required=true,
      *          in="path",
+     *
      *          @OA\Schema(
      *              type="integer"
      *          )
      *      ),
+     *
      *      @OA\RequestBody(
      *          required=true,
+     *
      *          @OA\JsonContent(ref="#/components/schemas/UpdateTokenRequest")
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
+     *
      *            @OA\JsonContent(
      *                type="object",
+     *
      *                @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *                @OA\Property(property="path", type="string", example="api/v1/tokens"),
      *                @OA\Property(property="method", type="string", example="PUT"),
@@ -393,6 +429,7 @@ class TokenController extends Controller
      *                   )
      *            )
      *       ),
+     *
      *      @OA\Response(
      *          response=401,
      *          description="Unauthenticated",
@@ -404,8 +441,10 @@ class TokenController extends Controller
      *       @OA\Response(
      *           response=404,
      *           description="Resource Not Found",
+     *
      *           @OA\JsonContent(
      *               type="object",
+     *
      *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *               @OA\Property(property="path", type="string", example="api/v1/tokens/1"),
      *               @OA\Property(property="method", type="string", example="PUT"),
@@ -417,20 +456,17 @@ class TokenController extends Controller
      *               @OA\Property(property="result",type="object",example={})
      *             )
      *       ),
+     *
      *       @OA\Response(
      *           response=422,
      *           description="Unprocessable Entity"
      *       )
      * )
      */
-    private function updateA()
-    {
-    }
+    private function updateA() {}
+
     /**
      * Delete token
-     *
-     * @param int $id
-     * @return SuccessApiResponse|ErrorApiResponse
      */
     /**
      * @OA\Delete(
@@ -439,15 +475,18 @@ class TokenController extends Controller
      *      tags={"Tokens"},
      *      summary="Delete existing token",
      *      description="Deletes a record and returns no content",
+     *
      *      @OA\Parameter(
      *          name="id",
      *          description="Token id",
      *          required=true,
      *          in="path",
+     *
      *          @OA\Schema(
      *              type="integer"
      *          )
      *      ),
+     *
      *      @OA\Response(
      *          response=204,
      *          description="Successful operation"
@@ -463,8 +502,10 @@ class TokenController extends Controller
      *       @OA\Response(
      *           response=404,
      *           description="Resource Not Found",
+     *
      *           @OA\JsonContent(
      *               type="object",
+     *
      *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *               @OA\Property(property="path", type="string", example="api/v1/tokens/{id}"),
      *               @OA\Property(property="method", type="string", example="DELETE"),
@@ -486,11 +527,11 @@ class TokenController extends Controller
             if (is_string($token)) {
                 throw new ModelNotFoundException($token);
             }
-//            $this->authorize('delete', $token);
+            //            $this->authorize('delete', $token);
             $this->tokenService->deleteToken($id);
 
             return [
-                'message' => 'Token successfully deleted'
+                'message' => 'Token successfully deleted',
             ];
         }, 204);
     }
@@ -498,8 +539,6 @@ class TokenController extends Controller
     /**
      * Get token information
      *
-     * @param string $address
-     * @return JsonResponse
      *
      * @OA\Get(
      *      path="/v1/tokens/{address}/info",
@@ -507,25 +546,31 @@ class TokenController extends Controller
      *      tags={"Tokens"},
      *      summary="Get token information",
      *      description="Returns token information for a given address",
+     *
      *      @OA\Parameter(
      *          name="address",
      *          description="Token address",
      *          required=true,
      *          in="path",
+     *
      *          @OA\Schema(
      *              type="string"
      *          )
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="name", type="string", example="Ethereum"),
      *              @OA\Property(property="symbol", type="string", example="ETH"),
      *              @OA\Property(property="total_supply", type="string", example="115714953")
      *          )
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Token not found"
@@ -549,6 +594,7 @@ class TokenController extends Controller
             return $tokenInfo;
         });
     }
+
     private function storeOrUpdateToken(string $address, array $tokenData): void
     {
         Token::updateOrCreate(
@@ -560,11 +606,10 @@ class TokenController extends Controller
             ]
         );
     }
+
     /**
      * Get top token holders
      *
-     * @param string $address
-     * @return JsonResponse
      *
      * @OA\Get(
      *      path="/v1/tokens/{address}/top-holders",
@@ -572,26 +617,33 @@ class TokenController extends Controller
      *      tags={"Tokens"},
      *      summary="Get top token holders",
      *      description="Returns top holders for a given token address",
+     *
      *      @OA\Parameter(
      *          name="address",
      *          description="Token address",
      *          required=true,
      *          in="path",
+     *
      *          @OA\Schema(
      *              type="string"
      *          )
      *      ),
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Successful operation",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="token_address", type="string", example="0x123456789abcdef..."),
      *              @OA\Property(
      *                  property="top_holders",
      *                  type="array",
+     *
      *                  @OA\Items(
      *                      type="object",
+     *
      *                      @OA\Property(property="address", type="string", example="0xabcdef123456..."),
      *                      @OA\Property(property="balance", type="string", example="1000000000000000000"),
      *                      @OA\Property(property="percentage", type="string", example="10.5")
@@ -599,6 +651,7 @@ class TokenController extends Controller
      *              )
      *          )
      *      ),
+     *
      *      @OA\Response(
      *          response=404,
      *          description="Token not found"
@@ -632,11 +685,10 @@ class TokenController extends Controller
                 'token_address' => $tokenAddress,
                 'holder_address' => $holder['address'],
                 'balance' => $holder['balance'],
-                'percentage' => $holder['percentage']
+                'percentage' => $holder['percentage'],
             ];
         }, $holders);
 
         TokenHolder::insert($holdersData);
     }
-
 }

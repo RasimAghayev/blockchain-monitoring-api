@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers\Tokens\Models;
 
-use Illuminate\Database\Eloquent\{Factories\HasFactory, Model};
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * @method static findOrFail(mixed $token_id)
@@ -12,10 +13,10 @@ class Token extends Model
     use HasFactory;
 
     protected $fillable = [
-        "address",
-        "name",
-        "symbol",
-        "total_supply"
+        'address',
+        'name',
+        'symbol',
+        'total_supply',
     ];
 
     protected function casts(): array
@@ -24,5 +25,4 @@ class Token extends Model
             'total_supply' => 'float',
         ];
     }
-
 }

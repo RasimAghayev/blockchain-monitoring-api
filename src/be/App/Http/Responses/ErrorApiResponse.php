@@ -9,11 +9,6 @@ use Throwable;
 
 class ErrorApiResponse extends ApiErrorResponse
 {
-
-    /**
-     * @param mixed $dataOrMessage
-     * @param int|null $code
-     */
     public static function make(mixed $dataOrMessage = [], ?int $code = null): static
     {
         if ($code === 422 && $dataOrMessage instanceof MessageBag) {
@@ -29,32 +24,25 @@ class ErrorApiResponse extends ApiErrorResponse
         return parent::make($dataOrMessage, $code);
     }
 
-    /**
-     * @param $request
-     * @return JsonResponse
-     */
     public function toResponse($request): JsonResponse
     {
         $response = parent::toResponse($request);
 
-        $data = (array)$response->getData();
+        $data = (array) $response->getData();
 
-        if (!isset($data['errors']) || !is_array($data['errors'])) {
+        if (! isset($data['errors']) || ! is_array($data['errors'])) {
             $data['error'] = $this->formatErrorMessage($this->dataOrMessage);
         }
 
         $data['result'] = [];
 
         $response->setData($data);
+
         return $response;
     }
 
-
     /**
      * Format error message based on input type
-     *
-     * @param mixed $error
-     * @return string|array
      */
     protected function formatErrorMessage(mixed $error): string|array
     {
@@ -67,24 +55,20 @@ class ErrorApiResponse extends ApiErrorResponse
         }
 
         if (is_object($error) && method_exists($error, '__toString')) {
-            return (string)$error;
+            return (string) $error;
         }
 
-        return (string)$error ?: $this->defaultErrorMessage();
+        return (string) $error ?: $this->defaultErrorMessage();
     }
 
-    /**
-     * @return string
-     */
-    #[Override] protected function defaultErrorMessage(): string
+    #[Override]
+    protected function defaultErrorMessage(): string
     {
         return 'Something went wrong';
     }
 
-    /**
-     * @return int
-     */
-    #[Override] protected function defaultResponseCode(): int
+    #[Override]
+    protected function defaultResponseCode(): int
     {
         return 500;
     }

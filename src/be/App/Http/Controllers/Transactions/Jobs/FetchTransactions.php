@@ -19,8 +19,5 @@ class FetchTransactions implements ShouldQueue
         $this->address = $address;
     }
 
-    public function handle()
-    {
-
-    }
+    public function handle() {}
 }

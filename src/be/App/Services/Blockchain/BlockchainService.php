@@ -38,9 +38,11 @@ class BlockchainService
             }
 
             $data = $response->json();
+
             return response()->json($successCallback($data));
         } catch (\Exception $e) {
-            Log::error('Blockchain API error: ' . $e->getMessage());
+            Log::error('Blockchain API error: '.$e->getMessage());
+
             return response()->json(['error' => 'Server error occurred'], 500);
         }
     }

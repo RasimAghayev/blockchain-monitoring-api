@@ -1,5 +1,7 @@
 # Use the official PHP image with FPM
-FROM php:8.4-fpm AS build
+# Digest pinned (R91): the lock file is resolved against PHP 8.4, so a floating
+# tag would let the runtime drift away from the platform the lock was built for.
+FROM php:8.4-fpm@sha256:b0d7dff8f2d57155aebb5150dfcb5056a8c8d977aac3c2e21cfce32b8a4b004d AS build
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -34,7 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Create a smaller final image
-FROM php:8.4-fpm
+FROM php:8.4-fpm@sha256:b0d7dff8f2d57155aebb5150dfcb5056a8c8d977aac3c2e21cfce32b8a4b004d
 
 # Copy necessary artifacts from the build stage
 COPY --from=build /usr/local/bin/composer /usr/local/bin/composer
@@ -81,6 +83,11 @@ USER www-data
 
 # Expose the PHP-FPM port
 EXPOSE 9000
+
+# Healthcheck: FPM listens on TCP 9000. A bare "is the process up" check is not
+# enough, so probe the port with the runtime's own socket support.
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=10s \
+    CMD php -r 'exit(@fsockopen("127.0.0.1", 9000) ? 0 : 1);'
 
 # Start PHP-FPM
 CMD ["php-fpm"]

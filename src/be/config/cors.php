@@ -24,7 +24,7 @@ return [
         'http://localhost',
         'http://localhost:3000',
         'http://localhost:3001',
-        'http://localhost:5173'
+        'http://localhost:5173',
     ],
 
     'allowed_origins_patterns' => [],
@@ -48,7 +48,7 @@ return [
         'Cache-Control',
         'X-RateLimit-Limit',
         'X-RateLimit-Remaining',
-        'X-Powered-By'
+        'X-Powered-By',
     ],
 
     'exposed_headers' => [
@@ -60,7 +60,7 @@ return [
         'Referrer-Policy',
         'Content-Security-Policy',
         'Permissions-Policy',
-        'Strict-Transport-Security'
+        'Strict-Transport-Security',
     ],
 
     'max_age' => 86400,

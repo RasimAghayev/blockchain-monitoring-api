@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Tokens\Requests;
@@ -70,9 +71,6 @@ class StoreTokenRequest extends ApiFormRequest
         return $this->getCommonMessages();
     }
 
-    /**
-     * @return TokenDTO
-     */
     public function toDTO(): TokenDTO
     {
         return TokenDTO::fromRequest($this->validated());

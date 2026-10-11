@@ -19,11 +19,11 @@ class TransactionHelper
         } catch (ValidationException $e) {
             return ErrorApiResponse::make($e->errors(), 422);
         } catch (AuthorizationException $e) {
-            return ErrorApiResponse::make("Authorization failed: " . $e->getMessage(), 403);
+            return ErrorApiResponse::make('Authorization failed: '.$e->getMessage(), 403);
         } catch (ModelNotFoundException|NotFoundHttpException $e) {
-            return ErrorApiResponse::make("Resource not found: " . $e->getMessage(), 404);
+            return ErrorApiResponse::make('Resource not found: '.$e->getMessage(), 404);
         } catch (Throwable $e) {
-            return ErrorApiResponse::make("An error occurred: " . $e->getMessage(), 500);
+            return ErrorApiResponse::make('An error occurred: '.$e->getMessage(), 500);
         }
     }
 }

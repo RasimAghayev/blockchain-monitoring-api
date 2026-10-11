@@ -10,6 +10,7 @@ use OpenApi\Annotations as OA;
  * @OA\Schema(
  *        schema="403Error",
  *        type="object",
+ *
  *        @OA\Property(property="result", type="array", @OA\Items(), example={}),
  *        @OA\Property(property="error", type="string", example="User does not have the right roles.")
  *    )
@@ -17,6 +18,7 @@ use OpenApi\Annotations as OA;
  * @OA\Schema(
  *       schema="401Error",
  *       type="object",
+ *
  *       @OA\Property(property="result", type="array", @OA\Items(), example={}),
  *       @OA\Property(property="error", type="string", example="Authentication error.")
  *   )
@@ -24,12 +26,10 @@ use OpenApi\Annotations as OA;
  * @OA\Schema(
  *        schema="500Error",
  *        type="object",
+ *
  *        @OA\Property(property="result", type="array", @OA\Items(), example={}),
  *        @OA\Property(property="error", type="string", example="Error string")
  *    )
- *
- *
- * 
  *
  * @OA\Schema(
  *     description="Response with authorized user data",
@@ -37,6 +37,7 @@ use OpenApi\Annotations as OA;
  *     type="object",
  *     allOf = {
  *         @OA\Schema(
+ *
  *             @OA\Property(
  *              property="result",
  *              type="object",
@@ -69,9 +70,5 @@ use OpenApi\Annotations as OA;
  *         ),
  *     }
  * )
- *
  */
-class SwaggerController
-{
-
-}
+class SwaggerController {}

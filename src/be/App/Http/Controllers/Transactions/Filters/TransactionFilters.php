@@ -12,6 +12,7 @@ class TransactionFilters extends ApiFilter
         'transactionToAddress' => ['eq', 'lk', 'nlk', 'ilk', 'inlk'],
         'transactionAmount' => ['eq', 'lt', 'lte', 'gt', 'gte', 'ne', 'bt', 'nbt', 'in', 'nin'],
     ];
+
     protected array $columnMap = [
         'transactionHash' => 'hash',
         'transactionFromAddress' => 'from_address',

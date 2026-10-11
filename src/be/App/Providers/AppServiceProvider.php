@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use App\Http\Controllers\Tokens\Models\Token;
 use App\Http\Controllers\Tokens\Observers\TokenObserver;
-use App\Http\Controllers\Tokens\Repositories\{TokenRepository, TokenRepositoryInterface};
-use App\Http\Controllers\Tokens\Services\{TokenService, TokenServiceInterface};
+use App\Http\Controllers\Tokens\Repositories\TokenRepository;
+use App\Http\Controllers\Tokens\Repositories\TokenRepositoryInterface;
+use App\Http\Controllers\Tokens\Services\TokenService;
+use App\Http\Controllers\Tokens\Services\TokenServiceInterface;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\ServiceProvider;
 use L5Swagger\Generator;

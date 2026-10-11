@@ -2,28 +2,15 @@
 
 namespace App\Http\Controllers\Transactions\DTOs;
 
-
 readonly class TransactionDTO
 {
-    /**
-     * @param string $hash
-     * @param string $from_address
-     * @param string $to_address
-     * @param float  $amount
-     */
     public function __construct(
         public string $hash,
         public string $from_address,
         public string $to_address,
-        public float  $amount,
-    )
-    {
-    }
+        public float $amount,
+    ) {}
 
-    /**
-     * @param array $data
-     * @return TransactionDTO
-     */
     public static function fromRequest(array $data): self
     {
         return new self(
@@ -34,9 +21,6 @@ readonly class TransactionDTO
         );
     }
 
-    /**
-     * @return array
-     */
     public function toArray(): array
     {
         return [

@@ -57,18 +57,15 @@ use OpenApi\Annotations as OA;
  */
 class TokenResource extends JsonResource
 {
-    /**
-     * @var TokenDTO|null
-     */
     private ?TokenDTO $tokenDTO = null;
 
     /**
-     * @param TokenDTO $tokenDTO
      * @return $this
      */
     public function setDTO(TokenDTO $tokenDTO): self
     {
         $this->tokenDTO = $tokenDTO;
+
         return $this;
     }
 

@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Checks;
 
 use App\Helpers\TransactionHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Responses\{ErrorApiResponse, SuccessApiResponse};
+use App\Http\Responses\ErrorApiResponse;
+use App\Http\Responses\SuccessApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\{Artisan, DB, Http};
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use OpenApi\Annotations as OA;
 
 /**
@@ -20,7 +23,6 @@ class CheckController extends Controller
     /**
      * Check database connectivity.
      *
-     * @return SuccessApiResponse|ErrorApiResponse
      *
      * @OA\Get(
      *      path="/v1/check/db",
@@ -28,11 +30,14 @@ class CheckController extends Controller
      *      tags={"Health Checks"},
      *      summary="Check database connectivity",
      *      description="Verifies the application can connect to the database",
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Database connection successful",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *              @OA\Property(property="path", type="string", example="api/v1/check/db"),
      *              @OA\Property(property="method", type="string", example="GET"),
@@ -42,6 +47,7 @@ class CheckController extends Controller
      *              )
      *          )
      *      ),
+     *
      *      @OA\Response(response=500, description="Database connection failed")
      * )
      */
@@ -49,6 +55,7 @@ class CheckController extends Controller
     {
         return TransactionHelper::handleWithTransaction(function () {
             DB::connection()->getPdo();
+
             return ['status' => 'Application is up and running, database connection is ok!'];
         });
     }
@@ -56,7 +63,6 @@ class CheckController extends Controller
     /**
      * Check application health.
      *
-     * @return SuccessApiResponse|ErrorApiResponse
      *
      * @OA\Get(
      *      path="/v1/check/health",
@@ -64,11 +70,14 @@ class CheckController extends Controller
      *      tags={"Health Checks"},
      *      summary="Check application health",
      *      description="Returns application health status",
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Application is healthy",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *              @OA\Property(property="path", type="string", example="api/v1/check/health"),
      *              @OA\Property(property="method", type="string", example="GET"),
@@ -90,7 +99,6 @@ class CheckController extends Controller
     /**
      * Check static content.
      *
-     * @return SuccessApiResponse|ErrorApiResponse
      *
      * @OA\Get(
      *      path="/v1/check/static",
@@ -98,11 +106,14 @@ class CheckController extends Controller
      *      tags={"Health Checks"},
      *      summary="Check static content",
      *      description="Returns a static health status",
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Static check successful",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *              @OA\Property(property="path", type="string", example="api/v1/check/static"),
      *              @OA\Property(property="method", type="string", example="GET"),
@@ -132,11 +143,14 @@ class CheckController extends Controller
      *      tags={"Health Checks"},
      *      summary="Get server IP address",
      *      description="Returns the server's public IP address and location info",
+     *
      *      @OA\Response(
      *          response=200,
      *          description="IP address retrieved successfully",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *              @OA\Property(property="path", type="string", example="api/v1/check/ip"),
      *              @OA\Property(property="method", type="string", example="GET"),
@@ -150,6 +164,7 @@ class CheckController extends Controller
      *              )
      *          )
      *      ),
+     *
      *      @OA\Response(response=502, description="Failed to retrieve IP information")
      * )
      */
@@ -163,7 +178,6 @@ class CheckController extends Controller
     /**
      * Clear all application caches.
      *
-     * @return SuccessApiResponse|ErrorApiResponse
      *
      * @OA\Get(
      *      path="/v1/check/clear_cache",
@@ -171,11 +185,14 @@ class CheckController extends Controller
      *      tags={"Health Checks"},
      *      summary="Clear all application caches",
      *      description="Clears config, route, view, and application caches",
+     *
      *      @OA\Response(
      *          response=200,
      *          description="Cache cleared successfully",
+     *
      *          @OA\JsonContent(
      *              type="object",
+     *
      *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
      *              @OA\Property(property="path", type="string", example="api/v1/check/clear_cache"),
      *              @OA\Property(property="method", type="string", example="GET"),
@@ -198,7 +215,7 @@ class CheckController extends Controller
         Artisan::call('view:clear');
 
         return TransactionHelper::handleWithTransaction(function () {
-            return ['status' => "Cache is cleared " . date(now())];
+            return ['status' => 'Cache is cleared '.date(now())];
         });
     }
 }

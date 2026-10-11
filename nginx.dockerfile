@@ -1,5 +1,6 @@
 # Start with Alpine Linux for a minimal base image
-FROM nginx:alpine
+# Digest pinned (R91): a floating tag silently changes the build input.
+FROM nginx:alpine@sha256:df221db836e1754089190208cee7eeda94f233197056426eda74a43ab1abeac2
 
 # Add metadata labels
 LABEL maintainer="Rasim Aghayev <rasimaqayev@gmail.com>" \
@@ -35,13 +36,20 @@ RUN mkdir -p /var/cache/nginx \
 COPY --chown=nginx:nginx ./server/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY --chown=nginx:nginx ./server/nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# Copy static content
+# Copy backend content
+#
+# The repository contains no frontend. node.dockerfile and the previous
+# "COPY ./src/fe/" line referred to a directory that exists neither on disk nor in
+# git, so this image could never build. node.dockerfile is left in place for
+# reference; the frontend is a separate concern.
 COPY --chown=nginx:nginx ./src/be/ /var/www/html/be
-COPY --chown=nginx:nginx ./src/fe/ /var/www/html/fe
 
 # Implement healthcheck
-HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost/health || exit 1
+# Laravel registers its health route as /up (bootstrap/app.php), not /health.
+# The page renders a full HTML document and takes several seconds on a cold
+# container, so the default 3s timeout always failed.
+HEALTHCHECK --interval=30s --timeout=15s --start-period=30s --retries=3 \
+    CMD curl -fsS -o /dev/null http://localhost/up || exit 1
 
 # Set working directory
 WORKDIR /var/www/html

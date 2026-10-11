@@ -13,6 +13,7 @@ use OpenApi\Annotations as OA;
  *     schema="TransactionResource",
  *     title="Transaction Resource",
  *     description="Transaction resource",
+ *
  *     @OA\Property(property="id", type="integer", example=1),
  *     @OA\Property(property="name", type="string", example="John Doe"),
  *     @OA\Property(
@@ -27,18 +28,15 @@ use OpenApi\Annotations as OA;
  */
 class TransactionResource extends JsonResource
 {
-    /**
-     * @var TransactionDTO|null
-     */
     private ?TransactionDTO $transactionDTO = null;
 
     /**
-     * @param TransactionDTO $transactionDTO
      * @return $this
      */
     public function setDTO(TransactionDTO $transactionDTO): self
     {
         $this->transactionDTO = $transactionDTO;
+
         return $this;
     }
 
@@ -60,7 +58,7 @@ class TransactionResource extends JsonResource
         };
 
         // Fallback to PERSONAL if type is invalid
-        if (!$status) {
+        if (! $status) {
             $status = TransactionTypes::PERSONAL;
         }
 

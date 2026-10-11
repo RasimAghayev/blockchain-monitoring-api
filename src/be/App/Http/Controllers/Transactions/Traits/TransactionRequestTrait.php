@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Transactions\Traits;
@@ -32,7 +33,7 @@ trait TransactionRequestTrait
             'name.required' => 'Şirkət adını qeyd edərdiniz.',
             'name.min' => 'Şirkət adını minimum 3 simvol qeyd edərdiniz.',
             'type.required' => 'Müştəri tipini qeyd edərdiniz.',
-            'type.in' => 'Müştəri tipini ancaq Fərdi, Biznes  qeyd edərdiniz.'
+            'type.in' => 'Müştəri tipini ancaq Fərdi, Biznes  qeyd edərdiniz.',
         ];
     }
 
@@ -42,8 +43,12 @@ trait TransactionRequestTrait
     protected function prepareForValidation(): void
     {
         $data = [];
-        if (isset($this->name)) $data['name'] = $this->name;
-        if (isset($this->type)) $data['type'] = $this->type;
+        if (isset($this->name)) {
+            $data['name'] = $this->name;
+        }
+        if (isset($this->type)) {
+            $data['type'] = $this->type;
+        }
         $this->merge($data);
     }
 }

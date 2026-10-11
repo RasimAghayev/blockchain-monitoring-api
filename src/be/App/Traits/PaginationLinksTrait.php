@@ -4,7 +4,6 @@ namespace App\Traits;
 
 trait PaginationLinksTrait
 {
-
     protected function getSelfLink(): ?string
     {
         return $this->resource->url($this->resource->currentPage());
@@ -29,5 +28,4 @@ trait PaginationLinksTrait
     {
         return $this->resource->nextPageUrl();
     }
-
 }

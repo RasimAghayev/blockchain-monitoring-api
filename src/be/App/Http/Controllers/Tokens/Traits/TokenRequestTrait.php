@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Http\Controllers\Tokens\Traits;
@@ -34,7 +35,7 @@ trait TokenRequestTrait
             'tokenName.min' => 'The name must be at least 3 characters long.',
             'tokenSymbol.required' => 'Please enter the symbol.',
             'tokenTotalSupply.required' => 'Please enter the total supply.',
-            'tokenTotalSupply.numeric' => 'Total supply must be a numeric value.'
+            'tokenTotalSupply.numeric' => 'Total supply must be a numeric value.',
         ];
     }
 

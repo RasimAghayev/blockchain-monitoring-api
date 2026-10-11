@@ -2,28 +2,15 @@
 
 namespace App\Http\Controllers\Tokens\DTOs;
 
-
 readonly class TokenDTO
 {
-    /**
-     * @param string $address
-     * @param string $name
-     * @param string $symbol
-     * @param float $total_supply
-     */
     public function __construct(
         public string $address,
         public string $name,
         public string $symbol,
-        public float  $total_supply,
-    )
-    {
-    }
+        public float $total_supply,
+    ) {}
 
-    /**
-     * @param array $data
-     * @return TokenDTO
-     */
     public static function fromRequest(array $data): self
     {
         return new self(
@@ -34,9 +21,6 @@ readonly class TokenDTO
         );
     }
 
-    /**
-     * @return array
-     */
     public function toArray(): array
     {
         return [

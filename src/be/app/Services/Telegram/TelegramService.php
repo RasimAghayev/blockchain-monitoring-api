@@ -16,6 +16,14 @@ class TelegramService
         $this->chatId = env('TELEGRAM_CHAT_ID');
     }
 
+    /**
+     * Whether a bot token and a chat are configured.
+     */
+    public function isConfigured(): bool
+    {
+        return filled($this->botToken) && filled($this->chatId);
+    }
+
     public function sendMessage($message): void
     {
         $url = "https://api.telegram.org/bot{$this->botToken}/sendMessage";

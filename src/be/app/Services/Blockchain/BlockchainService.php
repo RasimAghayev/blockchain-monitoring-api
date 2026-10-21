@@ -28,8 +28,20 @@ class BlockchainService
             });
     }
 
+    /**
+     * Whether an upstream blockchain endpoint is configured.
+     */
+    public function isConfigured(): bool
+    {
+        return filled($this->apiUrl);
+    }
+
     private function makeApiRequest(string $endpoint, string $errorMessage, callable $successCallback): JsonResponse
     {
+        if (! $this->isConfigured()) {
+            return response()->json(['error' => 'Blockchain API is not configured'], 503);
+        }
+
         try {
             $response = Http::get("{$this->apiUrl}/{$endpoint}");
 

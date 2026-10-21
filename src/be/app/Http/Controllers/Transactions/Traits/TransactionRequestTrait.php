@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Transactions\Traits;
 
-use App\Http\Controllers\Transactions\Enums\TransactionTypes;
-use Illuminate\Validation\Rule;
-
 trait TransactionRequestTrait
 {
     /**
-     * Get common validation rules
+     * Validation rules for the columns the transactions table stores.
      *
      * @return array<string, mixed>
      */
     protected function getCommonRules(): array
     {
         return [
-            'name' => ['string', 'min:3', 'max:255'],
-            'type' => [Rule::in(TransactionTypes::values())],
+            'transactionHash' => ['string', 'min:3', 'max:255'],
+            'transactionFromAddress' => ['string', 'min:3', 'max:255'],
+            'transactionToAddress' => ['string', 'max:255'],
+            'transactionAmount' => ['numeric', 'min:0'],
+            'transactionGasFee' => ['numeric', 'min:0'],
         ];
     }
 
@@ -30,25 +30,33 @@ trait TransactionRequestTrait
     protected function getCommonMessages(): array
     {
         return [
-            'name.required' => 'Şirkət adını qeyd edərdiniz.',
-            'name.min' => 'Şirkət adını minimum 3 simvol qeyd edərdiniz.',
-            'type.required' => 'Müştəri tipini qeyd edərdiniz.',
-            'type.in' => 'Müştəri tipini ancaq Fərdi, Biznes  qeyd edərdiniz.',
+            'transactionHash.required' => 'Please enter the transaction hash.',
+            'transactionHash.min' => 'The hash must be at least 3 characters long.',
+            'transactionFromAddress.required' => 'Please enter the sender address.',
+            'transactionFromAddress.min' => 'The sender address must be at least 3 characters long.',
+            'transactionToAddress.string' => 'The recipient address must be a string.',
+            'transactionAmount.required' => 'Please enter the amount.',
+            'transactionAmount.numeric' => 'The amount must be a numeric value.',
+            'transactionGasFee.required' => 'Please enter the gas fee.',
+            'transactionGasFee.numeric' => 'The gas fee must be a numeric value.',
         ];
     }
 
     /**
-     * Frontend'dən gələn camelCase formatını snake_case formatına çeviririk
+     * The fields a transaction cannot be stored without.
+     *
+     * A contract deployment has no recipient, so the recipient address is not
+     * part of this list.
+     *
+     * @return array<int, string>
      */
-    protected function prepareForValidation(): void
+    protected function getRequiredFields(): array
     {
-        $data = [];
-        if (isset($this->name)) {
-            $data['name'] = $this->name;
-        }
-        if (isset($this->type)) {
-            $data['type'] = $this->type;
-        }
-        $this->merge($data);
+        return [
+            'transactionHash',
+            'transactionFromAddress',
+            'transactionAmount',
+            'transactionGasFee',
+        ];
     }
 }

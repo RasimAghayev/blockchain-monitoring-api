@@ -40,7 +40,7 @@ class TransactionService implements TransactionServiceInterface
         });
     }
 
-    public function getTransactionById(int $id): Transaction|string
+    public function getTransactionById(int $id): Transaction
     {
         return $this->transactionRepository->findOrFail($id);
     }

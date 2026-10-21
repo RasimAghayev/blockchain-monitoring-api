@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Transactions;
 
-use App\Helpers\CachedApiCallHelper;
 use App\Helpers\TransactionHelper;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Transactions\Models\Transaction;
 use App\Http\Controllers\Transactions\Requests\StoreTransactionRequest;
 use App\Http\Controllers\Transactions\Requests\UpdateTransactionRequest;
 use App\Http\Controllers\Transactions\Resources\TransactionCollection;
@@ -16,11 +14,8 @@ use App\Http\Controllers\Transactions\Services\TransactionServiceInterface;
 use App\Http\Responses\ErrorApiResponse;
 use App\Http\Responses\ErrorValidationResponse;
 use App\Http\Responses\SuccessApiResponse;
-use App\Services\Blockchain\BlockchainService;
 use App\Services\Telegram\TelegramService;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Annotations as OA;
 
@@ -39,7 +34,6 @@ class TransactionController extends Controller
     public function __construct(
         private readonly TransactionServiceInterface $transactionService,
         private readonly TelegramService $telegramService,
-        private readonly BlockchainService $blockchainService,
     ) {}
 
     /**
@@ -275,9 +269,6 @@ class TransactionController extends Controller
     {
         return TransactionHelper::handleWithTransaction(function () use ($id) {
             $transaction = $this->transactionService->getTransactionById($id);
-            if (is_string($transaction)) {
-                throw new ModelNotFoundException($transaction);
-            }
 
             //            $this->authorize('view', Transaction::class);
             return [
@@ -363,10 +354,7 @@ class TransactionController extends Controller
     public function update(UpdateTransactionRequest $request, int $id): SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request, $id) {
-            $transaction = $this->transactionService->getTransactionById($id);
-            if (is_string($transaction)) {
-                throw new ModelNotFoundException($transaction);
-            }
+            $this->transactionService->getTransactionById($id);
             //            $this->authorize('update', $transaction);
             $updatedTransaction = $this->transactionService->updateTransaction($id, $request->toDTO());
 
@@ -432,10 +420,7 @@ class TransactionController extends Controller
     public function destroy(int $id): SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($id) {
-            $transaction = $this->transactionService->getTransactionById($id);
-            if (is_string($transaction)) {
-                throw new ModelNotFoundException($transaction);
-            }
+            $this->transactionService->getTransactionById($id);
             //            $this->authorize('delete', $transaction);
             $this->transactionService->deleteTransaction($id);
 
@@ -535,92 +520,4 @@ class TransactionController extends Controller
      * )
      */
     private function updateA() {}
-
-    /**
-     * Get latest transactions for a token
-     *
-     *
-     * @OA\Get(
-     *      path="/v1/tokens/{address}/latest-transactions",
-     *      operationId="getLatestTransactions",
-     *      tags={"Tokens"},
-     *      summary="Get latest transactions for a token",
-     *      description="Returns the latest transactions for a given token address",
-     *
-     *      @OA\Parameter(
-     *          name="address",
-     *          description="Token address",
-     *          required=true,
-     *          in="path",
-     *
-     *          @OA\Schema(
-     *              type="string"
-     *          )
-     *      ),
-     *
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation",
-     *
-     *          @OA\JsonContent(
-     *              type="object",
-     *
-     *              @OA\Property(property="address", type="string", example="0x123456789abcdef..."),
-     *              @OA\Property(
-     *                  property="transactions",
-     *                  type="array",
-     *
-     *                  @OA\Items(
-     *                      type="object",
-     *
-     *                      @OA\Property(property="hash", type="string", example="0xabcdef1234567890..."),
-     *                      @OA\Property(property="from", type="string", example="0x1111222233334444..."),
-     *                      @OA\Property(property="to", type="string", example="0x5555666677778888..."),
-     *                      @OA\Property(property="value", type="string", example="1000000000000000000"),
-     *                      @OA\Property(property="timestamp", type="integer", example=1621234567)
-     *                  )
-     *              )
-     *          )
-     *      ),
-     *
-     *      @OA\Response(
-     *          response=404,
-     *          description="Token not found"
-     *      ),
-     *      @OA\Response(
-     *          response=500,
-     *          description="Server error"
-     *      )
-     * )
-     */
-    public function getLatestTransactions(string $address): JsonResponse
-    {
-        return CachedApiCallHelper::cachedApiCall("transactions_{$address}", 5, function () use ($address) {
-            $latestTransactions = $this->blockchainService->getLatestTransactions($address);
-
-            if ($latestTransactions->status() === 200) {
-                $data = $latestTransactions->getData(true);
-                $this->storeTokenTransactions($data['transactions'] ?? []);
-            }
-
-            return $latestTransactions;
-        });
-    }
-
-    private function storeTokenTransactions(array $transactions): void
-    {
-        $transactionsData = array_map(function ($transaction) {
-            return [
-                'hash' => $transaction['hash'],
-                'from_address' => $transaction['from'],
-                'to_address' => $transaction['to'],
-                'value' => $transaction['value'],
-                'timestamp' => $transaction['timestamp'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        }, $transactions);
-
-        Transaction::insertOrIgnore($transactionsData);
-    }
 }

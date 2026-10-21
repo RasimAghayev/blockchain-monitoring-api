@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Transactions\Repositories;
 
 use App\Http\Controllers\Transactions\DTOs\TransactionDTO;
 use App\Http\Controllers\Transactions\Models\Transaction;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 interface TransactionRepositoryInterface
@@ -22,16 +23,29 @@ interface TransactionRepositoryInterface
 
     /**
      * Find transaction by ID
+     *
+     * @throws ModelNotFoundException
      */
-    public function findOrFail(int $id): Transaction|string;
+    public function findOrFail(int $id): Transaction;
 
     /**
      * Update existing transaction
+     *
+     * @throws ModelNotFoundException
      */
     public function update(int $id, TransactionDTO $transactionDTO): Transaction;
 
     /**
      * Delete transaction
+     *
+     * @throws ModelNotFoundException
      */
     public function delete(int $id): void;
+
+    /**
+     * Store transactions fetched from the chain
+     *
+     * @param  array<int, array<string, mixed>>  $transactions
+     */
+    public function storeTransactions(array $transactions): int;
 }

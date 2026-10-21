@@ -15,7 +15,7 @@ interface TransactionServiceInterface
 
     public function createTransaction(TransactionDTO $transactionDTO): Transaction;
 
-    public function getTransactionById(int $id): Transaction|string;
+    public function getTransactionById(int $id): Transaction;
 
     public function updateTransaction(int $id, TransactionDTO $transactionDTO): Transaction;
 

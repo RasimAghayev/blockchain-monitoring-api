@@ -19,16 +19,32 @@ use OpenApi\Annotations as OA;
  *     type="object",
  *
  *      @OA\Property(
- *               property="name",
+ *               property="transactionHash",
  *               type="string",
- *               example="John Doe"
+ *               example="0x9f2c1b7c9d4e5f60718293a4b5c6d7e8f9012345"
  *       ),
  *      @OA\Property(
- *               property="type",
- *               type="integer",
- *               example=1,
- *               description="1 for Personal, 2 for Business"
- *      )
+ *               property="transactionFromAddress",
+ *               type="string",
+ *               example="0x1111111111111111111111111111111111111111"
+ *       ),
+ *      @OA\Property(
+ *               property="transactionToAddress",
+ *               type="string",
+ *               example="0x2222222222222222222222222222222222222222"
+ *       ),
+ *      @OA\Property(
+ *               property="transactionAmount",
+ *               type="number",
+ *               format="double",
+ *               example=1.5
+ *       ),
+ *      @OA\Property(
+ *               property="transactionGasFee",
+ *               type="number",
+ *               format="double",
+ *               example=0.0004
+ *       )
  * )
  */
 class UpdateTransactionRequest extends ApiFormRequest
@@ -47,21 +63,14 @@ class UpdateTransactionRequest extends ApiFormRequest
         $rules = $this->getCommonRules();
 
         if ($this->method() === 'PUT') {
-            foreach ($rules as $field => &$fieldRules) {
-                if (! is_array($fieldRules)) {
-                    $fieldRules = [$fieldRules];
-                }
-
-                if (! in_array('required', $fieldRules)) {
-                    array_unshift($fieldRules, 'required');
+            foreach ($this->getRequiredFields() as $field) {
+                if (isset($rules[$field]) && is_array($rules[$field])) {
+                    array_unshift($rules[$field], 'required');
                 }
             }
         } else {
-            foreach ($rules as $field => &$fieldRules) {
-                if (! is_array($fieldRules)) {
-                    $fieldRules = [$fieldRules];
-                }
-                array_unshift($fieldRules, 'sometimes');
+            foreach (array_keys($rules) as $field) {
+                $rules[$field] = array_merge(['sometimes'], (array) $rules[$field]);
             }
         }
 

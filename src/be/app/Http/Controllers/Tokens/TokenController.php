@@ -18,7 +18,6 @@ use App\Http\Responses\ErrorApiResponse;
 use App\Http\Responses\ErrorValidationResponse;
 use App\Http\Responses\SuccessApiResponse;
 use App\Services\Blockchain\BlockchainService;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -274,9 +273,6 @@ class TokenController extends Controller
     {
         return TransactionHelper::handleWithTransaction(function () use ($id) {
             $token = $this->tokenService->getTokenById($id);
-            if (is_string($token)) {
-                throw new ModelNotFoundException($token);
-            }
 
             //            $this->authorize('view', Token::class);
             return [
@@ -371,10 +367,7 @@ class TokenController extends Controller
     public function update(UpdateTokenRequest $request, int $id): SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request, $id) {
-            $token = $this->tokenService->getTokenById($id);
-            if (is_string($token)) {
-                throw new ModelNotFoundException($token);
-            }
+            $this->tokenService->getTokenById($id);
             //            $this->authorize('update', $token);
             $updatedToken = $this->tokenService->updateToken($id, $request->toDTO());
 
@@ -523,10 +516,7 @@ class TokenController extends Controller
     public function destroy(int $id): SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($id) {
-            $token = $this->tokenService->getTokenById($id);
-            if (is_string($token)) {
-                throw new ModelNotFoundException($token);
-            }
+            $this->tokenService->getTokenById($id);
             //            $this->authorize('delete', $token);
             $this->tokenService->deleteToken($id);
 

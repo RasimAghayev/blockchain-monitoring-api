@@ -54,12 +54,12 @@ class TokenRepository implements TokenRepositoryInterface
      *
      * @throws ModelNotFoundException
      */
-    public function findOrFail(int $id): Token|string
+    public function findOrFail(int $id): Token
     {
         $token = $this->tokenModel->find($id);
 
         if (! $token) {
-            return "Token not found with ID: {$id}";
+            throw new ModelNotFoundException("Token not found with ID: {$id}");
         }
 
         return $token;
@@ -67,10 +67,11 @@ class TokenRepository implements TokenRepositoryInterface
 
     /**
      * Delete token
+     *
+     * @throws ModelNotFoundException
      */
     public function delete(int $id): void
     {
-        $token = $this->findOrFail($id);
-        $token->delete();
+        $this->findOrFail($id)->delete();
     }
 }

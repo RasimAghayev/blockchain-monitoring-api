@@ -15,7 +15,7 @@ interface TokenServiceInterface
 
     public function createToken(TokenDTO $tokenDTO): Token;
 
-    public function getTokenById(int $id): Token|string;
+    public function getTokenById(int $id): Token;
 
     public function updateToken(int $id, TokenDTO $tokenDTO): Token;
 

@@ -40,7 +40,7 @@ class TokenService implements TokenServiceInterface
         });
     }
 
-    public function getTokenById(int $id): Token|string
+    public function getTokenById(int $id): Token
     {
         return $this->tokenRepository->findOrFail($id);
     }

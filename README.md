@@ -14,10 +14,11 @@ balanslarını saxlayır, əməliyyatları isə xarici blockchain API-sindən ç
 
 ## Qurulma
 
-**1. `.env` yaradın.** Repo `.env` faylını saxlamır (`.gitignore`-da).
+**1. `.env` yaradın.** Repo `.env` faylını saxlamır (`.gitignore`-da) və bütün
+mount-lar `var/` altındadır (R92).
 
 ```shell
-cp .env.example .env
+cp .env.example var/.env
 ```
 
 **2. Dependency-ləri qurun.** `composer` servisi `www-data` ilə işləyir — bu, `php`
@@ -66,7 +67,15 @@ curl http://localhost/api/v1/check/health
 | `lint` | `test.dockerfile` | — | `profiles: ["test"]` |
 
 Bütün bazalar digest ilə pinned-dir və bütün servislərdə CPU, yaddaş və PID
-limiti var.
+limiti var. Named volume yoxdur — hər mount `var/` altındakı host yolundan
+gedir, `var/` isə həm `.gitignore`, həm `.dockerignore` ilə bağlıdır.
+
+| Mount | Qədər |
+|---|---|
+| `./var/.env` | lokal mühit faylı (6 servis) |
+| `./var/postgres` | PostgreSQL data |
+| `./var/redis` | Redis data |
+| `./src/be` | tətbiq mənbəyi ( versiyalanan məhsul kodu) |
 
 ---
 
@@ -78,6 +87,8 @@ Cavablar `ApiBaseResponse` formatındadır:
 ```json
 { "timestamp": "...", "path": "...", "method": "...", "error": null, "result": {} }
 ```
+
+Sorğu və cavb formatlarının təfərrüatlı təsviri: [docs/api-contract.md](docs/api-contract.md).
 
 ### Tokens
 
@@ -91,18 +102,25 @@ Cavablar `ApiBaseResponse` formatındadır:
 | GET | `/tokens/{address}/info` | Xarici API-dən token məlumatı, 10 dəqiqəlik keş |
 | GET | `/tokens/{address}/top-holders` | Top holder-lər, 10 dəqiqəlik keş |
 
-`/tokens` və `/transactions` uçun süzəni sintaksisi: `tokenSymbol[lk]`, `transactionAmount[gte]`
-və s. Operator siyahısı hər feature-in `Filters/` klassında.
-
 ### Transactions
 
 | Metod | Yol | Qaydası |
 |---|---|---|
 | GET | `/transactions` | Siyahı. `transactionHash[lk]`, `transactionAmount[gte]` |
-| POST | `/transactions` | Yarat — **işləmir**, bax "Məlum çatışmazlıqlar" |
-| GET | `/transactions/{id}` | Bir əməliyyat — **işləmir** |
-| PATCH/PUT | `/transactions/{id}` | Yenilə — **işləmir** |
-| DELETE | `/transactions/{id}` | Sil — **işləmir** |
+| POST | `/transactions` | Yarat. `transactionHash`, `transactionFromAddress`, `transactionAmount`, `transactionGasFee` |
+| GET | `/transactions/{id}` | Bir əməliyyat |
+| PATCH/PUT | `/transactions/{id}` | Yenilə (PATCH yalnız göndərilən sahələri dəyişir) |
+| DELETE | `/transactions/{id}` | Sil (204) |
+
+`/tokens` və `/transactions` uçun süzəni sintaksisi eynidir: `tokenSymbol[lk]`,
+`transactionHash[lk]`, `transactionAmount[gte]` və s. Operator siyahısı hər
+feature-in `Filters/` klassında.
+
+### Xarici API ilə işləyən əməliyyatlar
+
+Xarici blockchain API-si `API_BLOCKCHAIN_URL` mühit dəyişəni ilə təyin olunur
+(`config/services.php`). Təyin edilməmişdirsə, bu endpoint-lər 503 qaytarır və
+`transactions:fetch` işçisi heç nə etmədən dayanır.
 
 ### Yoxlama
 
@@ -135,6 +153,28 @@ Test mühiti SQLite `:memory:` və `phpunit.xml`-dəki `APP_KEY` istifadə edir.
 Testləri yazmadan dependency major keçidi etməyin: hər keçiddən sonra
 `docker compose --profile test run --rm test` işləməlidir.
 
+### CI/CD
+
+`.github/workflows/ci.yml` hər push və hər pull request üçün eyni keyfiyyət
+qapılarını işlədir:
+
+| Addım | Əmr | Qapı |
+|---|---|---|
+| Şəkillərin qurulması | `docker compose build test composer` | ✅ |
+| Dependency-lərin quraşdırılması | `docker compose run --rm composer install` | ✅ |
+| Təhlükəsizlik yoxlaması | `composer audit --abandoned=report` | ✅ |
+| Testlər | `docker compose --profile test run --rm test` | ✅ |
+| Lint | `docker compose --profile test run --rm lint` | ✅ |
+
+Pipeline yalnız `contents: read` icazəsi ilə işləyir, heç nə publish etmir və
+gizli açar istifadə etmir. `actions/checkout` sabit commit SHA-ya bağlıdır, ona
+görə etiket sürüşdürülə bilər. Runner-da yalnız Docker var — dil alətləri
+quraşdırılmır, bütün əmrlər laynerin öz imajlarından icra olunur.
+
+İki sabit qovluq var: `master` (yayımlanmaya hazır) və `test` (inteqrasiya).
+Dəyişiklik `feature/*` qovluğundan `test`-ə, sonra `test`-dən `master`-ə
+çıxarılır.
+
 ---
 
 ## Gündəlik əmrlər
@@ -145,26 +185,41 @@ docker compose run --rm artisan migrate:fresh --seed
 docker compose run --rm artisan db:seed --class=UserSeeder
 docker compose run --rm artisan jwt:secret
 docker compose run --rm artisan l5-swagger:generate --all
+docker compose run --rm artisan transactions:fetch 0x...   # əməliyyatları çəkib saxlayır
 docker compose down                            # steki dayandır
 docker compose down -v                         # həmçinin volume-ları sil
 ```
+
+`transactions:fetch` komandası `FetchTransactions` işini növbəyə atır. İşçi
+növbədə `QUEUE_CONNECTION=redis` olduqda Horizon tərəfindən, `sync` olduqda isə
+birbaşa yerinə yetirilir.
+
+---
+
+## Sənədlər
+
+| Sənəd | Nəyi özələşdirir |
+|---|---|
+| [docs/api-contract.md](docs/api-contract.md) | Endpoint-lər, sorğu sahələri, süzənlər, xəta formatı |
+| [docs/runbook.md](docs/runbook.md) | İstehsal və istismar addımları, problemlərin həlli |
+| [docs/README.md](docs/README.md) | Sənədlər indeksi |
 
 ---
 
 ## Məlum çatışmazlıqlar
 
-Bunlar qəsdə gizlədilmir; hesabat `reports/blockchain-monitoring-api.md` faylındadır.
-
 | # | Problem | Vəziyyət |
 |---|---|---|
-| 1 | Transactions feature-i işləmir: `Enums\TransactionTypes` yoxdur, tələb qatı `name`/`type` validasiya edir (cədvəl isə `hash`/`from_address`/`to_address`/`amount`/`gas_fee` saxlayır), `FetchTransactions::handle()` boşdur, `storeTokenTransactions()` mövcud olmayan `$this->address` və `timestamp` sütununu istifadə edir | 🔴 bloklayıcı, dizayn qərarı lazımdır |
-| 2 | `php artisan route:list` `Unable to detect application namespace` xətası verir — tətbiq qovluğu `App/` (böyük hərf) | 🔴 `app/`-ə normallaşdırma T15-də nəzərdə tutulub |
+| 1 | Transactions feature-i işləmir: `Enums\TransactionTypes` yoxdur, tələb qatı `name`/`type` validasiya edir (cədvəl isə `hash`/`from_address`/`to_address`/`amount`/`gas_fee` saxlayır), `FetchTransactions::handle()` boşdur, `storeTokenTransactions()` mövcud olmayan `$this->address` və `timestamp` sütununu istifadə edir | ✅ düzəldildi — tələb qatı cədvəl sxemi ilə uyğunlaşdırıldı, enum və işçi yazıldı |
+| 2 | `php artisan route:list` `Unable to detect application namespace` xətası verir — tətbiq qovluğu `App/` (böyük hərf) | ✅ düzəldildi — mənbə qovluğu `app/`-ə köçürüldü |
 | 3 | `node.dockerfile` və nginx-dən əvvəlki `src/fe` kopyası orphan-dir; repoda frontend yoxdur | ℹ️ nginx faylı düzəldildi, `node.dockerfile` istifadə olunmur |
-| 4 | `bootstrap/app.php` `api` middleware qrupunu **iki dəfə** təyin edir — ikinci təyinat birincisini əvəzləyir və `throttle:api` itir | ⚠️ düzəliş tələb edir |
-| 5 | `ErrorInternalServerErrorResponse` `config('App.debug')` oxuyur (səhv açar) — `APP_DEBUG=true` olsa da mesaj heç vaxt cavaba düşmür | ⚠️ düzəliş tələb edir |
-| 6 | `TokenRepository::delete()` `findOrFail()` nəticəsi `string` ola bilər və then `.delete()` çağırılır | ⚠️ indi controller qarşısını alır, repository isə qalır |
+| 4 | `bootstrap/app.php` `api` middleware qrupunu **iki dəfə** təyin edir — ikinci təyinat birincisini əvəzləyir və `throttle:api` itir | ✅ düzəldildi — qrup tək təyinatda birləşdirildi |
+| 5 | `ErrorInternalServerErrorResponse` `config('App.debug')` oxuyur (səhv açar) — `APP_DEBUG=true` olsa da mesaj heç vaxt cavaba düşmür | ✅ düzəldildi — `config('app.debug')` |
+| 6 | `TokenRepository::delete()` `findOrFail()` nəticəsi `string` ola bilər və then `.delete()` çağırılır | ✅ düzəldildi — tapılmış tapşırıq `ModelNotFoundException` atır |
 | 7 | `Cache` və `Session` `file` sürücüsündədir; Redis yalnız queue/cache üçün konteyner kimi qalır | ℹ️ qərar tələb edir |
-| 8 | Mount-lar `./src/be`, `./db/postgres`, `./db/redis` yollarındadır, `var/` altında deyil | ⚠️ R92 ilə uyğunsuzluq |
+| 8 | Mount-lar `./src/be`, `./db/postgres`, `./db/redis` yollarındadır, `var/` altında deyil | ✅ düzəldildi — state və `.env` mount-ları `var/` altına köçürüldü |
+
+Açıq qalanlar: 3 və 7 — hər ikisi də məhsul qərarı tələb edir, texniki xəta deyil.
 
 ---
 
@@ -176,13 +231,14 @@ blockchain-monitoring-api/
 ├── nginx.dockerfile  php.dockerfile  composer.dockerfile
 ├── test.dockerfile   postgres.dockerfile  redis.dockerfile
 ├── node.dockerfile                # orphan, istifadə olunmur
+├── docs/             API kontraktı və runbook
 ├── server/
 │   ├── nginx/      nginx.conf, default.conf
 │   └── postgres/   postgresql.conf + init skriptləri
-├── db/             postgres və redis data qovluqları (bind mount)
+├── var/             mount mənbəyi: .env, postgres və redis data (gitignore)
 └── src/be/         Laravel tətbiqi
-    ├── App/Http/Controllers/{Tokens,Transactions,Checks}/   # vertikal dilimlər
-    ├── App/Services/{Blockchain,Telegram}/
+    ├── app/Http/Controllers/{Tokens,Transactions,Checks}/   # vertikal dilimlər
+    ├── app/Services/{Blockchain,Telegram}/
     ├── config/  database/  routes/  tests/
     └── composer.json  composer.lock  phpunit.xml
 ```

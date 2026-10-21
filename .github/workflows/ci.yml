@@ -1,0 +1,57 @@
+name: CI
+
+# The whole quality gate runs inside the project's own Docker images, so the
+# runner needs a Docker daemon and nothing else. No language toolchain is
+# installed on the runner.
+on:
+  push:
+    branches: [master, test]
+  pull_request:
+    branches: [master, test]
+
+# The pipeline only reads the repository. It never publishes anything and never
+# writes to the GitHub API.
+permissions:
+  contents: read
+
+jobs:
+  quality-gates:
+    name: Docker quality gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Create the local environment file
+        # Every bind mount of the compose stack lives under var/ (R92). The
+        # values are the placeholders of .env.example; the test suite reads its
+        # own configuration from phpunit.xml and never touches this file.
+        run: |
+          mkdir -p var
+          cp .env.example var/.env
+
+      - name: Build the test images
+        run: docker compose build test composer
+
+      - name: Install the dependencies
+        run: |
+          docker compose run --rm --user root --entrypoint composer composer install \
+            --no-interaction --no-progress --prefer-dist
+          # The containers run as www-data (uid 33). Composer wrote the vendor
+          # tree as root, so the ownership is handed over before the suite runs.
+          sudo chown -R 33:33 src/be/vendor src/be/storage src/be/bootstrap/cache
+
+      - name: Audit the dependencies
+        # Abandoned packages are reported but do not fail the build: the single
+        # one in this tree is doctrine/annotations, pulled in by l5-swagger 8.
+        run: |
+          docker compose run --rm --user root --entrypoint composer composer audit \
+            --no-interaction --abandoned=report
+
+      - name: Run the test suite
+        run: docker compose --profile test run --rm test
+
+      - name: Run the linter
+        run: docker compose --profile test run --rm lint

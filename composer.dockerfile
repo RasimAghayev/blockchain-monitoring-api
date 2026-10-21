@@ -4,7 +4,7 @@
 #
 # No HEALTHCHECK: this image runs a batch command and exits. There is no long
 # running process to probe.
-FROM php:8.4-cli@sha256:0177c7589c0715b63e5343342a7c1f1887db759ad0b0d6ad3bb949938bba6b47
+FROM php:8.4-cli@sha256:e2432ac85c3454004d89e3d75615abd2d205b7ffb9590e586fad1a053f016bb3
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \

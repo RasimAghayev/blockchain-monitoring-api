@@ -23,14 +23,13 @@
     </testsuites>
     <source>
         <include>
-            <directory>App</directory>
+            <directory>app</directory>
         </include>
     </source>
     <!--
         force="true" everywhere: the container injects .env values into the
         process environment, and PHPUnit does not override variables that are
         already set. Without force the suite silently ran against pgsql_bc.
-        <source> points at "app" but the source root is "App".
     -->
     <php>
         <env name="APP_ENV" value="testing" force="true"/>

@@ -8,9 +8,9 @@ LABEL maintainer="Rasim Aghayev <rasimaqayev@gmail.com>" \
       description="Production-ready Postgres server"
 
 # Set environment variables for customization
-ENV POSTGRES_DB=myapp \
-    POSTGRES_USER=myapp \
-    POSTGRES_PASSWORD=mypassword \
+ENV POSTGRES_DB=invoicedb \
+    POSTGRES_USER=pgsql \
+    POSTGRES_PASSWORD=pgsql \
     PGDATA=/var/lib/postgresql/data/pgdata
 
 # Install additional tools and extensions

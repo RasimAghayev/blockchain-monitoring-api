@@ -1,7 +1,7 @@
 # Use the official PHP image with FPM
 # Digest pinned (R91): the lock file is resolved against PHP 8.4, so a floating
 # tag would let the runtime drift away from the platform the lock was built for.
-FROM php:8.4-fpm@sha256:b0d7dff8f2d57155aebb5150dfcb5056a8c8d977aac3c2e21cfce32b8a4b004d AS build
+FROM php:8.5-fpm@sha256:f49965c6e6a237eb3b27a6fc565e167839dc8abc65ee0652af0078f6ecdf4bbd AS build
 
 # Install system dependencies and PHP extensions
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Create a smaller final image
-FROM php:8.4-fpm@sha256:b0d7dff8f2d57155aebb5150dfcb5056a8c8d977aac3c2e21cfce32b8a4b004d
+FROM php:8.5-fpm@sha256:f49965c6e6a237eb3b27a6fc565e167839dc8abc65ee0652af0078f6ecdf4bbd
 
 # Copy necessary artifacts from the build stage
 COPY --from=build /usr/local/bin/composer /usr/local/bin/composer

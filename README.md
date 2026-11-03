@@ -1,4 +1,6 @@
 # Blockchain Monitoring API
+![Views](https://hits.sh/github.com/RasimAghayev/blockchain-monitoring-api.svg?label=views&color=0e75b6)
+
 
 Token və əməliyyat monitorinqi API-si. Token-un ümumi emissiyasını və holder
 balanslarını saxlayır, əməliyyatları isə xarici blockchain API-sindən çəkilir.

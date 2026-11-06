@@ -1,7 +1,7 @@
 # Test image. Same PHP version and extension set as php.dockerfile, plus the
 # drivers needed by the test suite. Kept out of php.dockerfile so the runtime
 # image does not carry test-only extensions.
-FROM php:8.4-fpm@sha256:b0d7dff8f2d57155aebb5150dfcb5056a8c8d977aac3c2e21cfce32b8a4b004d
+FROM php:8.5-fpm@sha256:baf3ea13a8207fa18e1011bad1016e8b5e59fc974c6966d0efa6f36a16f875f0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \

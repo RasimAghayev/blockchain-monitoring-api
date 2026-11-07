@@ -4,7 +4,7 @@
 #
 # No HEALTHCHECK: this image runs a batch command and exits. There is no long
 # running process to probe.
-FROM php:8.4-cli@sha256:0177c7589c0715b63e5343342a7c1f1887db759ad0b0d6ad3bb949938bba6b47
+FROM php:8.5-cli@sha256:8e5d746f87655d89573e76d2b9125ed1b1578e47d3c466a2b2fdfc35593d9b41
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=composer/composer:2-bin@sha256:696bfbbb82d8ab6ad3672c505bedd659e3815fd1c03cb5ef65ef7ee07a083fa6 \
+COPY --from=composer/composer:2-bin@sha256:206a6dc365fd66aac01e2744d8a6bc898108e802b1bcdde1cd782da788bf1db9 \
      /composer /usr/local/bin/composer
 
 ENV COMPOSER_MEMORY_LIMIT=-1

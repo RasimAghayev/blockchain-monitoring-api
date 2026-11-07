@@ -1,7 +1,7 @@
 # Test image. Same PHP version and extension set as php.dockerfile, plus the
 # drivers needed by the test suite. Kept out of php.dockerfile so the runtime
 # image does not carry test-only extensions.
-FROM php:8.4-fpm@sha256:b0d7dff8f2d57155aebb5150dfcb5056a8c8d977aac3c2e21cfce32b8a4b004d
+FROM php:8.4-fpm@sha256:212c3c9fc09d58f6b1a12b0b4a6a90fd44a209299a67633c2bccbc1dd53c55e0
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=composer/composer:2-bin@sha256:696bfbbb82d8ab6ad3672c505bedd659e3815fd1c03cb5ef65ef7ee07a083fa6 \
+COPY --from=composer/composer:2-bin@sha256:56a1b0a72bacd78079e3fa49a49e7bf58326365753415c99385ea2b08bded0a5 \
      /composer /usr/local/bin/composer
 
 WORKDIR /var/www/html/be

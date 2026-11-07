@@ -1,6 +1,6 @@
 # Build Stage
 # Node 23 reached end of life; 22 is the active LTS line. Digest pinned (R91).
-FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS builder
+FROM node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202 AS builder
 
 WORKDIR /var/www/html/fe
 
@@ -19,7 +19,7 @@ RUN npm install --include=dev && \
     npm run build
 
 # Runtime Stage
-FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402
+FROM node:22-alpine@sha256:0e1754758c2df4cfa3e68d59e2e1b7374bb7fd9ea6328eaaacf15cc934af8202
 
 WORKDIR /var/www/html/fe
 

@@ -16,6 +16,9 @@ npm-debug.log
 yarn-debug.log
 yarn-error.log
 
+# Runtime state of the compose stack (R92).
+var
+
 coverage
 
 build

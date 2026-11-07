@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 // Define the base path for controllers
-$basePath = base_path('App/Http/Controllers');
+$basePath = base_path('app/Http/Controllers');
 
 // Middleware and prefix configuration
 Route::middleware(['throttle:60,1'])

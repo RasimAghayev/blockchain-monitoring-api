@@ -58,19 +58,17 @@ return Application::configure(basePath: dirname(__DIR__))
             //            SecurityHeaders::class,
         ]);
 
-        // API Middleware Group
-        $middleware->group('api', [
-            'throttle:api',
-            EnsureFrontendRequestsAreStateful::class,
-        ]);
-
-        // API Middleware Group
+        // API Middleware Group. The group is defined once: a second definition
+        // replaced the first one, and the first one carried a "throttle:api"
+        // named limiter that was never registered. Any request that reached it
+        // failed with "Rate limiter [api] is not defined.".
         $middleware->group('api', [
             ThrottleRequests::class.':60,1',
             EnsureFrontendRequestsAreStateful::class,
             CompressResponse::class,
         ]);
-        // API Middleware Group
+
+        // Content Security Policy Middleware Group
         $middleware->group('csp', [
             ContentSecurityPolicyMiddleware::class,
         ]);
@@ -101,7 +99,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     default => null,
                 };
                 if (! $response) {
-                    $errorMessage = config('App.debug') ? $e->getMessage() : '';
+                    $errorMessage = config('app.debug') ? $e->getMessage() : '';
                     $response = ErrorInternalServerErrorResponse::make($errorMessage);
                 }
                 if ($response instanceof Response && $e instanceof HttpException) {

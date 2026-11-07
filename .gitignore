@@ -1,8 +1,5 @@
 /.idea
 /.vscode
-/db/mysql
-/db/redis
-/db/postgres
 .idx
 .vscode/*
 
@@ -13,7 +10,7 @@
 
 # Laravel 4 specific
 /src/be/bootstrap/compiled.php
-/src/be/App/storage/
+/src/be/app/storage/
 
 # Laravel 5 & Lumen specific
 /src/be/public/storage
@@ -55,5 +52,7 @@
 /src/fe/.env
 /src/fe/.env.*
 /src/fe/!.env.example
-/db
 .env
+
+# Runtime state. Every bind mount of the compose stack lives here (R92).
+/var/

@@ -59,14 +59,14 @@ curl http://localhost/api/v1/check/health
 
 | Servis | İmaj | Port | Qeyd |
 |---|---|---|---|
-| `nginx` | `nginx.dockerfile` | 80, 443 | Giriş nöqtəsi. Healthcheck `/up` |
-| `php` | `php.dockerfile` | 9000 (daxili) | php-fpm, `www-data` |
-| `artisan` | `php.dockerfile` | — | Tək çalışan CLI konteyneri |
-| `composer` | `composer.dockerfile` | — | CLI konteyneri, `www-data` |
-| `pgsql` | `postgres.dockerfile` | 6432 | PostgreSQL 16 + `pg_cron`, `postgis`, `timescaledb` |
-| `redis` | `redis.dockerfile` | 8002 | Lokal build — registry image işlədilmir |
-| `test` | `test.dockerfile` | — | `profiles: ["test"]` |
-| `lint` | `test.dockerfile` | — | `profiles: ["test"]` |
+| `nginx` | `docker/nginx.Dockerfile` | 80, 443 | Giriş nöqtəsi. Healthcheck `/up` |
+| `php` | `docker/php.Dockerfile` (`runtime`) | 9000 (daxili) | php-fpm, `www-data` |
+| `artisan` | `docker/php.Dockerfile` (`runtime`) | — | Tək çalışan CLI konteyneri |
+| `composer` | `docker/php.Dockerfile` (`cli`) | — | CLI konteyneri, `www-data` |
+| `pgsql` | `docker/postgres.Dockerfile` | 6432 | PostgreSQL 16 + `pg_cron`, `postgis`, `timescaledb` |
+| `redis` | `docker/redis.Dockerfile` | 8002 | Lokal build — registry image işlədilmir |
+| `test` | `docker/php.Dockerfile` (`test`) | — | `profiles: ["test"]` |
+| `lint` | `docker/php.Dockerfile` (`test`) | — | `profiles: ["test"]` |
 
 Bütün bazalar digest ilə pinned-dir və bütün servislərdə CPU, yaddaş və PID
 limiti var. Named volume yoxdur — hər mount `var/` altındakı host yolundan

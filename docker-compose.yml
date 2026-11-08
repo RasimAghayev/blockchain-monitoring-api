@@ -26,7 +26,7 @@ services:
   nginx:
     build:
       context: .
-      dockerfile: nginx.dockerfile
+      dockerfile: docker/nginx.Dockerfile
     container_name: nginx_bc
     restart: always
     depends_on:
@@ -51,7 +51,8 @@ services:
   php:
     build:
       context: .
-      dockerfile: php.dockerfile
+      dockerfile: docker/php.Dockerfile
+      target: runtime
     container_name: php_bc
     restart: always
     depends_on:
@@ -79,7 +80,8 @@ services:
   composer:
     build:
       context: .
-      dockerfile: composer.dockerfile
+      dockerfile: docker/php.Dockerfile
+      target: cli
     container_name: composer
     volumes:
       - ./src/be:/var/www/html/be:delegated
@@ -94,7 +96,8 @@ services:
   artisan:
     build:
       context: .
-      dockerfile: php.dockerfile
+      dockerfile: docker/php.Dockerfile
+      target: runtime
     container_name: artisan
     env_file:
       - var/.env
@@ -113,7 +116,8 @@ services:
   test:
     build:
       context: .
-      dockerfile: test.dockerfile
+      dockerfile: docker/php.Dockerfile
+      target: test
     profiles: ["test"]
     # No env_file on purpose. The container environment lands in $_SERVER, and
     # Dotenv reads $_SERVER before $_ENV, so an env_file would silently beat the
@@ -132,7 +136,8 @@ services:
   lint:
     build:
       context: .
-      dockerfile: test.dockerfile
+      dockerfile: docker/php.Dockerfile
+      target: test
     profiles: ["test"]
     volumes:
       - ./src/be:/var/www/html/be:delegated
@@ -146,7 +151,7 @@ services:
   pgsql:
     build:
       context: .
-      dockerfile: postgres.dockerfile
+      dockerfile: docker/postgres.Dockerfile
     container_name: pgsql_bc
     restart: always
     shm_size: 128mb
@@ -179,7 +184,7 @@ services:
     # Local build. No service may reference a registry image (R91).
     build:
       context: .
-      dockerfile: redis.dockerfile
+      dockerfile: docker/redis.Dockerfile
     container_name: redis
     restart: always
     command: redis-server --save 20 1 --loglevel warning

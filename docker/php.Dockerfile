@@ -43,7 +43,7 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=10s \
     CMD php -r 'exit(@fsockopen("127.0.0.1", 9000) ? 0 : 1);'
 CMD ["php-fpm"]
 
-FROM php:8.4-cli@sha256:0177c7589c0715b63e5343342a7c1f1887db759ad0b0d6ad3bb949938bba6b47 AS cli
+FROM php:8.4-cli@sha256:d63e8b80cd4c6cfd01cfa7c910522e299cdc7ca1a2b6d6563db48df3c17e6c55 AS cli
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git libjpeg62-turbo-dev libpng-dev libzip-dev unzip \
     && docker-php-ext-install bcmath exif pcntl posix zip \

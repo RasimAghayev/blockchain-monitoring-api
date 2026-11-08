@@ -2069,7 +2069,8 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2025-10-17T11:30:53+00:00"
+            "time": "2025-10-17T11:30:53+00:00",
+            "published-time": "2025-10-17T11:32:06+00:00"
         },
         {
             "name": "league/commonmark",
@@ -2809,7 +2810,8 @@
                 "issues": "https://github.com/namshi/jose/issues",
                 "source": "https://github.com/namshi/jose/tree/master"
             },
-            "time": "2016-12-05T07:27:31+00:00"
+            "time": "2016-12-05T07:27:31+00:00",
+            "published-time": "2016-12-05T07:28:15+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -3226,16 +3228,16 @@
         },
         {
             "name": "php-open-source-saver/jwt-auth",
-            "version": "v2.9.3",
+            "version": "v2.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-Open-Source-Saver/jwt-auth.git",
-                "reference": "1bdb72de5e60fcb02264d7aba4bd4608939e3798"
+                "reference": "d0089327dc53b03dac0f68dae7cbf9fc4618543b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-Open-Source-Saver/jwt-auth/zipball/1bdb72de5e60fcb02264d7aba4bd4608939e3798",
-                "reference": "1bdb72de5e60fcb02264d7aba4bd4608939e3798",
+                "url": "https://api.github.com/repos/PHP-Open-Source-Saver/jwt-auth/zipball/d0089327dc53b03dac0f68dae7cbf9fc4618543b",
+                "reference": "d0089327dc53b03dac0f68dae7cbf9fc4618543b",
                 "shasum": ""
             },
             "require": {
@@ -3315,7 +3317,8 @@
                 "issues": "https://github.com/PHP-Open-Source-Saver/jwt-auth/issues",
                 "source": "https://github.com/PHP-Open-Source-Saver/jwt-auth"
             },
-            "time": "2026-08-21T05:00:05+00:00"
+            "time": "2026-11-05T10:02:11+00:00",
+            "published-time": "2026-11-05T10:02:49+00:00"
         },
         {
             "name": "phpoption/phpoption",
@@ -5776,7 +5779,8 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-10-23T14:02:19+00:00"
+            "time": "2020-10-23T14:02:19+00:00",
+            "published-time": "2020-10-25T08:50:37+00:00"
         },
         {
             "name": "symfony/polyfill-php80",

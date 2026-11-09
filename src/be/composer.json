@@ -9,7 +9,7 @@
         "php": "^8.4",
         "darkaonline/l5-swagger": "^8.6",
         "doctrine/dbal": "^4.2",
-        "guzzlehttp/guzzle": "^7.9",
+        "guzzlehttp/guzzle": "^8.0",
         "laravel/framework": "^13.0",
         "laravel/horizon": "^5.30",
         "laravel/sanctum": "^4.0",

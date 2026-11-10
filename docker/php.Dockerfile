@@ -48,7 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git libjpeg62-turbo-dev libpng-dev libzip-dev unzip \
     && docker-php-ext-install bcmath exif pcntl posix zip \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-COPY --from=composer/composer:2-bin@sha256:56a1b0a72bacd78079e3fa49a49e7bf58326365753415c99385ea2b08bded0a5 /composer /usr/local/bin/composer
+COPY --from=composer/composer:2-bin@sha256:6a16999c2c89c0d457b136475ad6cc5c086b36d69b794e91d99041406407828b /composer /usr/local/bin/composer
 ENV COMPOSER_MEMORY_LIMIT=-1
 USER www-data
 WORKDIR /app
@@ -62,7 +62,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         pdo pdo_mysql mysqli mbstring exif pcntl posix bcmath gd zip pdo_sqlite pdo_pgsql && \
     docker-php-ext-configure pgsql --with-pgsql=/usr/local/pgsql && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-COPY --from=composer/composer:2-bin@sha256:56a1b0a72bacd78079e3fa49a49e7bf58326365753415c99385ea2b08bded0a5 /composer /usr/local/bin/composer
+COPY --from=composer/composer:2-bin@sha256:6a16999c2c89c0d457b136475ad6cc5c086b36d69b794e91d99041406407828b /composer /usr/local/bin/composer
 WORKDIR /var/www/html/be
 USER www-data
 CMD ["php-fpm"]

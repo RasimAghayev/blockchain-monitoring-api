@@ -1,6 +1,6 @@
 # Start with Alpine Linux for a minimal base image
 # Digest pinned (R91): a floating tag silently changes the build input.
-FROM nginx:alpine@sha256:fed7e14be83cbd2661a75cdc5b872d936cf155d46c327084d30b8df19ae88d72
+FROM nginx:alpine@sha256:b50897d5c7b1aa08067c3d90c5e8b3e47ec4e3c91c91446f67820228f7b41e34
 
 # Add metadata labels
 LABEL maintainer="Rasim Aghayev <rasimaqayev@gmail.com>" \

@@ -30,6 +30,10 @@ class TelegramService
         Http::post($url, [
             'chat_id' => $this->chatId,
             'text' => $message,
+            // The message body uses Markdown syntax (*bold*, `code`, links) —
+            // without parse_mode, Telegram renders it as literal characters
+            // instead of formatting it (docs/REPOSITORY_AUDIT.md P2-6).
+            'parse_mode' => 'Markdown',
         ]);
     }
 }

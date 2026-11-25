@@ -1,6 +1,6 @@
 # Use the official PostgreSQL Alpine image
 # Digest pinned (R91): a floating tag silently changes the build input.
-FROM postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
+FROM postgres:19-alpine@sha256:cac45fb483caee3668946088a1c0532db89d5285c28dbfeac889b4068296e06f
 
 # Add metadata labels
 LABEL maintainer="Rasim Aghayev <rasimaqayev@gmail.com>" \

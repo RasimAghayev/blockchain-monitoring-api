@@ -143,7 +143,14 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        // The 'phpredis' native extension is not compiled into this project's PHP
+        // image (docker/php.Dockerfile) — only the pure-PHP predis/predis package
+        // (already a composer dependency) is available, so that must be the
+        // default here too, not Laravel's stock skeleton default of 'phpredis'.
+        // Without this, any Redis connection (cache, session, queue, Horizon)
+        // fails at runtime unless every single environment remembers to set
+        // REDIS_CLIENT=predis explicitly.
+        'client' => env('REDIS_CLIENT', 'predis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),

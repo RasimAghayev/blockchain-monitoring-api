@@ -7,9 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\ErrorApiResponse;
 use App\Http\Responses\SuccessApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redis;
 use OpenApi\Annotations as OA;
 
 /**
@@ -176,46 +176,96 @@ class CheckController extends Controller
     }
 
     /**
-     * Clear all application caches.
+     * Liveness probe: is the process up and able to serve HTTP at all.
      *
+     * Deliberately checks no dependency (DB, Redis, …) — per
+     * docs/adr/0003-liveness-readiness-split.md, a dependency outage must not
+     * make an orchestrator (k8s, docker compose healthcheck) kill and restart
+     * an otherwise-healthy process. That is readiness's job (getReady()
+     * below).
      *
      * @OA\Get(
-     *      path="/v1/check/clear_cache",
-     *      operationId="clearCache",
+     *      path="/v1/health/live",
+     *      operationId="healthLive",
      *      tags={"Health Checks"},
-     *      summary="Clear all application caches",
-     *      description="Clears config, route, view, and application caches",
+     *      summary="Liveness probe",
+     *      description="Process is up and can serve HTTP. No dependency checks.",
      *
      *      @OA\Response(
      *          response=200,
-     *          description="Cache cleared successfully",
+     *          description="Process is alive",
      *
      *          @OA\JsonContent(
      *              type="object",
      *
      *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
-     *              @OA\Property(property="path", type="string", example="api/v1/check/clear_cache"),
+     *              @OA\Property(property="path", type="string", example="api/v1/health/live"),
      *              @OA\Property(property="method", type="string", example="GET"),
      *              @OA\Property(property="error", type="string", nullable=true, example=null),
      *              @OA\Property(property="result", type="object",
-     *                  @OA\Property(property="status", type="string", example="Cache is cleared 2025-02-15 23:21:32")
+     *                  @OA\Property(property="status", type="string", example="alive")
      *              )
      *          )
      *      )
      * )
      */
-    public function clearCache(): SuccessApiResponse|ErrorApiResponse
+    public function getLive(): SuccessApiResponse|ErrorApiResponse
     {
-        Artisan::call('optimize:clear');
-        Artisan::call('config:cache');
-        Artisan::call('config:clear');
-        Artisan::call('clear-compiled');
-        Artisan::call('cache:clear');
-        Artisan::call('route:cache');
-        Artisan::call('view:clear');
+        return TransactionHelper::handleWithTransaction(fn () => ['status' => 'alive']);
+    }
 
-        return TransactionHelper::handleWithTransaction(function () {
-            return ['status' => 'Cache is cleared '.date(now())];
-        });
+    /**
+     * Readiness probe: can this process actually serve traffic right now.
+     *
+     * Checks DB connectivity always, and the Redis connection only when a
+     * real dependency on it is configured (`CACHE_STORE=redis` or
+     * `QUEUE_CONNECTION=redis`) — checking a connection nothing in the current
+     * configuration uses would report false negatives. See
+     * docs/adr/0003-liveness-readiness-split.md.
+     *
+     * @OA\Get(
+     *      path="/v1/health/ready",
+     *      operationId="healthReady",
+     *      tags={"Health Checks"},
+     *      summary="Readiness probe",
+     *      description="Checks DB (always) and Redis (only if configured as cache/queue driver) connectivity",
+     *
+     *      @OA\Response(
+     *          response=200,
+     *          description="Ready to serve traffic",
+     *
+     *          @OA\JsonContent(
+     *              type="object",
+     *
+     *              @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
+     *              @OA\Property(property="path", type="string", example="api/v1/health/ready"),
+     *              @OA\Property(property="method", type="string", example="GET"),
+     *              @OA\Property(property="error", type="string", nullable=true, example=null),
+     *              @OA\Property(property="result", type="object",
+     *                  @OA\Property(property="status", type="string", example="ready")
+     *              )
+     *          )
+     *      ),
+     *
+     *      @OA\Response(response=503, description="A required dependency is unreachable")
+     * )
+     */
+    public function getReady(): SuccessApiResponse|ErrorApiResponse
+    {
+        try {
+            DB::connection()->getPdo();
+        } catch (\Throwable $e) {
+            return ErrorApiResponse::make('Database is not reachable.', 503);
+        }
+
+        if (config('cache.default') === 'redis' || config('queue.default') === 'redis') {
+            try {
+                Redis::connection()->ping();
+            } catch (\Throwable $e) {
+                return ErrorApiResponse::make('Redis is not reachable.', 503);
+            }
+        }
+
+        return TransactionHelper::handleWithTransaction(fn () => ['status' => 'ready']);
     }
 }

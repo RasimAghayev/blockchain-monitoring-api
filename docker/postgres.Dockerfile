@@ -1,6 +1,7 @@
 # Use the official PostgreSQL Alpine image
 # Digest pinned (R91): a floating tag silently changes the build input.
-FROM postgres:18-alpine@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
+# Postgres 19 (latest stable, standing decision 1).
+FROM postgres:19-alpine@sha256:cac45fb483caee3668946088a1c0532db89d5285c28dbfeac889b4068296e06f
 
 # Add metadata labels
 LABEL maintainer="Rasim Aghayev <rasimaqayev@gmail.com>" \
@@ -13,12 +14,12 @@ ENV POSTGRES_DB=invoicedb \
     POSTGRES_PASSWORD=pgsql \
     PGDATA=/var/lib/postgresql/data/pgdata
 
-# Install additional tools and extensions
-RUN apk add --no-cache \
-    pg_cron \
-    postgis \
-    timescaledb \
-    && mkdir -p /docker-entrypoint-initdb.d
+# pg_cron/postgis/timescaledb were installed with zero usage anywhere in this
+# repo (no migration or query references cron scheduling, geospatial types,
+# or time-series hypertables — docs/TECHNICAL_DEBT.md item 15). Dropped to
+# keep the image to what this schema actually needs; re-add if a real
+# geospatial/time-series/cron feature is ever built.
+RUN mkdir -p /docker-entrypoint-initdb.d
 
 # Copy initialization scripts
 COPY ./server/postgres /docker-entrypoint-initdb.d/

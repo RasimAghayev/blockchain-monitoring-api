@@ -4,7 +4,7 @@ use App\Http\Controllers\Tokens\TokenController;
 use Illuminate\Support\Facades\Route;
 
 Route::group([
-    //    'middleware' => ['api', 'auth:api'],
+    'middleware' => ['auth:api'],
     'prefix' => 'tokens',
 ], function () {
     // List and search

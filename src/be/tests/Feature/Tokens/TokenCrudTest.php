@@ -14,6 +14,17 @@ class TokenCrudTest extends TestCase
 
     private const ENDPOINT = '/api/v1/tokens';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Every tokens.* route now requires auth:api (docs/REPOSITORY_AUDIT.md
+        // P0-1). Authorization itself (TokenPolicy, deliberately permissive —
+        // see docs/adr/0001-flat-authorization.md) is covered by a dedicated
+        // test, not re-asserted in every CRUD test here.
+        $this->actingAsApiUser();
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -54,9 +65,13 @@ class TokenCrudTest extends TestCase
             'total_supply' => 10,
         ]);
 
-        $this->postJson(self::ENDPOINT, $this->payload())
-            ->assertStatus(500);
+        // A duplicate address is a validation error (unique:tokens,address on
+        // StoreTokenRequest), not an unhandled DB exception — see
+        // docs/REPOSITORY_AUDIT.md P0-3 and TokenRequestTrait::getCommonRules().
+        $response = $this->postJson(self::ENDPOINT, $this->payload())
+            ->assertStatus(422);
 
+        $this->assertArrayHasKey('tokenAddress', $response->json('error') ?? []);
         $this->assertSame(1, Token::query()->count());
     }
 

@@ -69,7 +69,11 @@ class ApiFilter
             'in', 'nin' => is_array($value)
                 ? [$column, $mappedOperator, $value]
                 : null,
-            'json' => ['JSON_CONTAINS', $column, $value],
+            // 'json' used to be special-cased here as [$mappedOperator, $column, $value]
+            // — a reversed tuple vs. every other branch (docs/REPOSITORY_AUDIT.md P3).
+            // The correct shape, [$column, $mappedOperator, $value], is exactly what the
+            // default arm below already produces, so the dedicated branch was both buggy
+            // and redundant; removing it fixes the bug and the duplication in one move.
             default => [$column, $mappedOperator, $value]
         };
     }

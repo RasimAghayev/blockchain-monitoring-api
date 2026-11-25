@@ -60,7 +60,7 @@ class UpdateTransactionRequest extends ApiFormRequest
      */
     public function rules(): array
     {
-        $rules = $this->getCommonRules();
+        $rules = $this->getCommonRules((int) $this->route('id'));
 
         if ($this->method() === 'PUT') {
             foreach ($this->getRequiredFields() as $field) {

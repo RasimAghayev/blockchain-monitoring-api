@@ -4,17 +4,28 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tokens\Traits;
 
+use Illuminate\Validation\Rule;
+
 trait TokenRequestTrait
 {
     /**
-     * Get common validation rules
+     * Get common validation rules.
+     *
+     * `tokenAddress` carries a `unique:tokens,address` check (docs/REPOSITORY_AUDIT.md
+     * P0-3): without it, a duplicate address reaches the database's own unique
+     * constraint unvalidated and throws an uncaught QueryException. Update requests
+     * pass the current token's id so the row is excluded from its own uniqueness
+     * check (a PUT/PATCH that resends the same address must not reject itself).
      *
      * @return array<string, mixed>
      */
-    protected function getCommonRules(): array
+    protected function getCommonRules(?int $ignoreTokenId = null): array
     {
         return [
-            'tokenAddress' => ['string', 'min:3', 'max:255'],
+            'tokenAddress' => [
+                'string', 'min:3', 'max:255',
+                Rule::unique('tokens', 'address')->ignore($ignoreTokenId),
+            ],
             'tokenName' => ['string', 'min:3', 'max:255'],
             'tokenSymbol' => ['string', 'min:3', 'max:255'],
             'tokenTotalSupply' => ['numeric', 'min:1'],

@@ -5,7 +5,13 @@ namespace App\Http\Controllers;
 use OpenApi\Annotations as OA;
 
 /**
- * @OA\PathItem(path="app"),
+ * This class declares no route of its own - it exists only to hold reusable
+ * `@OA\Schema` definitions referenced via `$ref` from real endpoint annotations
+ * elsewhere. It previously carried a stray `@OA\PathItem(path="app")` tag with
+ * no operations, which `l5-swagger:generate` turned into a bogus empty `"app"`
+ * entry in the generated OpenAPI `paths` object (confirmed by direct inspection
+ * of `storage/api-docs/api-docs.json` after fixing the classic-docblock scanning
+ * regression - see docs/TECHNICAL_DEBT.md #5). Removed: not a real path.
  *
  * @OA\Schema(
  *        schema="403Error",

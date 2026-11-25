@@ -104,7 +104,7 @@ class TransactionController extends Controller
     public function index(Request $request): TransactionCollection|SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request) {
-            //            $this->authorize('viewAny', Transaction::class);
+            $this->authorize('viewAny', Transaction::class);
             $transactions = $this->transactionService->getTransactions(
                 request: $request,
                 includeTags: $request->boolean('include_tags'),
@@ -184,7 +184,7 @@ class TransactionController extends Controller
     public function store(StoreTransactionRequest $request): SuccessApiResponse|ErrorApiResponse|ErrorValidationResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request) {
-            //            $this->authorize('createAny', Transaction::class);
+            $this->authorize('createAny', Transaction::class);
             $transaction = $this->transactionService->createTransaction($request->toDTO());
 
             return [
@@ -270,7 +270,8 @@ class TransactionController extends Controller
         return TransactionHelper::handleWithTransaction(function () use ($id) {
             $transaction = $this->transactionService->getTransactionById($id);
 
-            //            $this->authorize('view', Transaction::class);
+            $this->authorize('view', $transaction);
+
             return [
                 'message' => 'Transaction successfully show: '.$id,
                 'data' => new TransactionResource($transaction),
@@ -350,12 +351,93 @@ class TransactionController extends Controller
      *            description="Unprocessable Entity"
      *        )
      * )
+     *
+     * @OA\Put(
+     *      path="/v1/transactions/{id}",
+     *      operationId="updateTransactionPut",
+     *      tags={"Transactions"},
+     *      summary="Update existing transaction",
+     *      description="Returns updated transaction data",
+     *
+     *      @OA\Parameter(
+     *          name="id",
+     *          description="Transaction id",
+     *          required=true,
+     *          in="path",
+     *
+     *          @OA\Schema(
+     *              type="integer"
+     *          )
+     *      ),
+     *
+     *      @OA\RequestBody(
+     *          required=true,
+     *
+     *          @OA\JsonContent(ref="#/components/schemas/UpdateTransactionRequest")
+     *      ),
+     *
+     *      @OA\Response(
+     *          response=200,
+     *          description="Successful operation",
+     *
+     *            @OA\JsonContent(
+     *                type="object",
+     *
+     *                @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
+     *                @OA\Property(property="path", type="string", example="api/v1/transactions"),
+     *                @OA\Property(property="method", type="string", example="PUT"),
+     *                @OA\Property(property="error", type="string", nullable=true, example=null),
+     *                @OA\Property(
+     *                        property="result",
+     *                        type="object",
+     *                        @OA\Property(property="message", type="string", example="Transaction successfully created"),
+     *                        @OA\Property(property="data", type="object", ref="#/components/schemas/TransactionResource")
+     *                   )
+     *            )
+     *       ),
+     *
+     *      @OA\Response(
+     *          response=400,
+     *          description="Bad Request"
+     *      ),
+     *      @OA\Response(
+     *          response=401,
+     *          description="Unauthenticated",
+     *      ),
+     *      @OA\Response(
+     *          response=403,
+     *          description="Forbidden"
+     *      ),
+     *       @OA\Response(
+     *           response=404,
+     *           description="Resource Not Found",
+     *
+     *           @OA\JsonContent(
+     *               type="object",
+     *
+     *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
+     *               @OA\Property(property="path", type="string", example="api/v1/transactions/1"),
+     *               @OA\Property(property="method", type="string", example="GET"),
+     *               @OA\Property(
+     *                   property="error",
+     *                   type="object",
+     *                   example="Resource not found: Transaction not found with ID: 10"
+     *               ),
+     *               @OA\Property(property="result",type="object",example={})
+     *             )
+     *       ),
+     *
+     *       @OA\Response(
+     *           response=422,
+     *           description="Unprocessable Entity"
+     *       )
+     * )
      */
     public function update(UpdateTransactionRequest $request, int $id): SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request, $id) {
-            $this->transactionService->getTransactionById($id);
-            //            $this->authorize('update', $transaction);
+            $transaction = $this->transactionService->getTransactionById($id);
+            $this->authorize('update', $transaction);
             $updatedTransaction = $this->transactionService->updateTransaction($id, $request->toDTO());
 
             return [
@@ -420,8 +502,8 @@ class TransactionController extends Controller
     public function destroy(int $id): SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($id) {
-            $this->transactionService->getTransactionById($id);
-            //            $this->authorize('delete', $transaction);
+            $transaction = $this->transactionService->getTransactionById($id);
+            $this->authorize('delete', $transaction);
             $this->transactionService->deleteTransaction($id);
 
             return [
@@ -429,95 +511,4 @@ class TransactionController extends Controller
             ];
         }, 204);
     }
-
-    /**
-     * Delete transaction
-     *
-     * @param  int  $id
-     * @return SuccessApiResponse|ErrorApiResponse
-     */
-
-    /**
-     * @OA\Put(
-     *      path="/v1/transactions/{id}",
-     *      operationId="updateTransactionPut",
-     *      tags={"Transactions"},
-     *      summary="Update existing transaction",
-     *      description="Returns updated transaction data",
-     *
-     *      @OA\Parameter(
-     *          name="id",
-     *          description="Transaction id",
-     *          required=true,
-     *          in="path",
-     *
-     *          @OA\Schema(
-     *              type="integer"
-     *          )
-     *      ),
-     *
-     *      @OA\RequestBody(
-     *          required=true,
-     *
-     *          @OA\JsonContent(ref="#/components/schemas/UpdateTransactionRequest")
-     *      ),
-     *
-     *      @OA\Response(
-     *          response=200,
-     *          description="Successful operation",
-     *
-     *            @OA\JsonContent(
-     *                type="object",
-     *
-     *                @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
-     *                @OA\Property(property="path", type="string", example="api/v1/transactions"),
-     *                @OA\Property(property="method", type="string", example="POST"),
-     *                @OA\Property(property="error", type="string", nullable=true, example=null),
-     *                @OA\Property(
-     *                        property="result",
-     *                        type="object",
-     *                        @OA\Property(property="message", type="string", example="Transaction successfully created"),
-     *                        @OA\Property(property="data", type="object", ref="#/components/schemas/TransactionResource")
-     *                   )
-     *            )
-     *       ),
-     *
-     *      @OA\Response(
-     *          response=400,
-     *          description="Bad Request"
-     *      ),
-     *      @OA\Response(
-     *          response=401,
-     *          description="Unauthenticated",
-     *      ),
-     *      @OA\Response(
-     *          response=403,
-     *          description="Forbidden"
-     *      ),
-     *       @OA\Response(
-     *           response=404,
-     *           description="Resource Not Found",
-     *
-     *           @OA\JsonContent(
-     *               type="object",
-     *
-     *               @OA\Property(property="timestamp", type="string", format="date-time", example="2025-02-15T23:21:32+04:00"),
-     *               @OA\Property(property="path", type="string", example="api/v1/transactions/1"),
-     *               @OA\Property(property="method", type="string", example="GET"),
-     *               @OA\Property(
-     *                   property="error",
-     *                   type="object",
-     *                   example="Resource not found: Transaction not found with ID: 10"
-     *               ),
-     *               @OA\Property(property="result",type="object",example={})
-     *             )
-     *       ),
-     *
-     *       @OA\Response(
-     *           response=422,
-     *           description="Unprocessable Entity"
-     *       )
-     * )
-     */
-    private function updateA() {}
 }

@@ -14,6 +14,15 @@ class TransactionCrudTest extends TestCase
 
     private const ENDPOINT = '/api/v1/transactions';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Every transactions.* route now requires auth:api
+        // (docs/REPOSITORY_AUDIT.md P0-1).
+        $this->actingAsApiUser();
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -92,8 +101,14 @@ class TransactionCrudTest extends TestCase
             'gas_fee' => 0.1,
         ]);
 
-        $this->postJson(self::ENDPOINT, $this->payload())->assertStatus(500);
+        // A duplicate hash is a validation error (unique:transactions,hash on
+        // TransactionRequestTrait::getCommonRules()), not an unhandled DB
+        // exception — see docs/REPOSITORY_AUDIT.md P0-3, fixed here the same way
+        // as TokenCrudTest::test_it_rejects_a_duplicate_address().
+        $response = $this->postJson(self::ENDPOINT, $this->payload())
+            ->assertStatus(422);
 
+        $this->assertArrayHasKey('transactionHash', $response->json('error') ?? []);
         $this->assertSame(1, Transaction::query()->count());
     }
 

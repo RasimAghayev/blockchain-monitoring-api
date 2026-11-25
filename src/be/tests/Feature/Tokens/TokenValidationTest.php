@@ -14,6 +14,17 @@ class TokenValidationTest extends TestCase
 
     private const ENDPOINT = '/api/v1/tokens';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Every tokens.* route now requires auth:api (docs/REPOSITORY_AUDIT.md
+        // P0-1), and auth:api runs before the FormRequest's own validation — an
+        // unauthenticated request here would 401 before ever reaching the 422
+        // these tests assert on.
+        $this->actingAsApiUser();
+    }
+
     public static function invalidPayloads(): array
     {
         return [

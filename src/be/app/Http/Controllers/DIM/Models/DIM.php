@@ -28,11 +28,4 @@ class DIM extends Model
     {
         return $this->belongsTo(Token::class);
     }
-
-    protected function casts(): array
-    {
-        return [
-            'order_price' => 'float',
-        ];
-    }
 }

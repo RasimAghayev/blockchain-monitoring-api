@@ -16,6 +16,14 @@ class TokenBlockchainEndpointTest extends TestCase
 
     private const ADDRESS = '0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Every tokens.* route now requires auth:api (docs/REPOSITORY_AUDIT.md P0-1).
+        $this->actingAsApiUser();
+    }
+
     public function test_it_fetches_token_info_and_stores_it(): void
     {
         Http::fake([

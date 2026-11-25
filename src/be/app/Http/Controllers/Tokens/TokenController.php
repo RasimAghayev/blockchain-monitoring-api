@@ -21,6 +21,7 @@ use App\Services\Blockchain\BlockchainService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use OpenApi\Annotations as OA;
 
 /**
@@ -108,7 +109,7 @@ class TokenController extends Controller
     public function index(Request $request): TokenCollection|SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request) {
-            //            $this->authorize('viewAny', Token::class);
+            $this->authorize('viewAny', Token::class);
             $tokens = $this->tokenService->getTokens(
                 request: $request,
                 includeTags: $request->boolean('include_tags'),
@@ -188,7 +189,7 @@ class TokenController extends Controller
     public function store(StoreTokenRequest $request): SuccessApiResponse|ErrorApiResponse|ErrorValidationResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($request) {
-            //            $this->authorize('createAny', Token::class);
+            $this->authorize('createAny', Token::class);
             $token = $this->tokenService->createToken($request->toDTO());
 
             return [
@@ -274,7 +275,8 @@ class TokenController extends Controller
         return TransactionHelper::handleWithTransaction(function () use ($id) {
             $token = $this->tokenService->getTokenById($id);
 
-            //            $this->authorize('view', Token::class);
+            $this->authorize('view', $token);
+
             return [
                 'message' => 'Token successfully show: '.$id,
                 'data' => new TokenResource($token),
@@ -363,22 +365,7 @@ class TokenController extends Controller
      *            description="Unprocessable Entity"
      *        )
      * )
-     */
-    public function update(UpdateTokenRequest $request, int $id): SuccessApiResponse|ErrorApiResponse
-    {
-        return TransactionHelper::handleWithTransaction(function () use ($request, $id) {
-            $this->tokenService->getTokenById($id);
-            //            $this->authorize('update', $token);
-            $updatedToken = $this->tokenService->updateToken($id, $request->toDTO());
-
-            return [
-                'message' => 'Token successfully updated',
-                'data' => new TokenResource($updatedToken),
-            ];
-        });
-    }
-
-    /**
+     *
      * @OA\Put(
      *      path="/v1/tokens/{id}",
      *      operationId="updateTokenPut",
@@ -456,7 +443,19 @@ class TokenController extends Controller
      *       )
      * )
      */
-    private function updateA() {}
+    public function update(UpdateTokenRequest $request, int $id): SuccessApiResponse|ErrorApiResponse
+    {
+        return TransactionHelper::handleWithTransaction(function () use ($request, $id) {
+            $token = $this->tokenService->getTokenById($id);
+            $this->authorize('update', $token);
+            $updatedToken = $this->tokenService->updateToken($id, $request->toDTO());
+
+            return [
+                'message' => 'Token successfully updated',
+                'data' => new TokenResource($updatedToken),
+            ];
+        });
+    }
 
     /**
      * Delete token
@@ -516,8 +515,8 @@ class TokenController extends Controller
     public function destroy(int $id): SuccessApiResponse|ErrorApiResponse
     {
         return TransactionHelper::handleWithTransaction(function () use ($id) {
-            $this->tokenService->getTokenById($id);
-            //            $this->authorize('delete', $token);
+            $token = $this->tokenService->getTokenById($id);
+            $this->authorize('delete', $token);
             $this->tokenService->deleteToken($id);
 
             return [
@@ -668,8 +667,6 @@ class TokenController extends Controller
 
     private function storeOrUpdateTokenHolders(string $tokenAddress, array $holders): void
     {
-        TokenHolder::where('token_address', $tokenAddress)->delete();
-
         $holdersData = array_map(function ($holder) use ($tokenAddress) {
             return [
                 'token_address' => $tokenAddress,
@@ -679,6 +676,18 @@ class TokenController extends Controller
             ];
         }, $holders);
 
-        TokenHolder::insert($holdersData);
+        // The delete-then-bulk-insert refresh must be atomic: without a
+        // transaction, a request that fails or a worker that crashes between
+        // the delete and the insert leaves this token's holder list empty
+        // until the next successful refresh (10s cache TTL on the caller), and
+        // under horizontally-scaled workers two concurrent refreshes for the
+        // same address could otherwise interleave their delete/insert pairs.
+        DB::transaction(function () use ($tokenAddress, $holdersData) {
+            TokenHolder::where('token_address', $tokenAddress)->delete();
+
+            if ($holdersData !== []) {
+                TokenHolder::insert($holdersData);
+            }
+        });
     }
 }

@@ -1,6 +1,9 @@
 <?php
 
 use L5Swagger\Generator;
+use OpenApi\Analysers\AttributeAnnotationFactory;
+use OpenApi\Analysers\DocBlockAnnotationFactory;
+use OpenApi\Analysers\ReflectionAnalyser;
 use OpenApi\scan;
 
 return [
@@ -107,11 +110,28 @@ return [
 
         'scanOptions' => [
             /**
-             * analyser: defaults to \OpenApi\StaticAnalyser .
+             * analyser: explicitly set, do NOT leave null.
+             *
+             * `darkaonline/l5-swagger` 11's own `Generator::setAnalyser()` falls back to a
+             * `ReflectionAnalyser` wired with `AttributeAnnotationFactory` ONLY when this is
+             * null/empty - silently dropping support for classic docblock `@OA\...`
+             * annotations, which this codebase uses exclusively (no PHP 8 attribute-style
+             * annotations exist anywhere here). That default differs from swagger-php's own
+             * `Generator::getAnalyser()` default, which wires both factories. Setting this
+             * explicitly restores swagger-php's own (correct, docblock-supporting) default so
+             * `php artisan l5-swagger:generate` doesn't fail with
+             * "Required @OA\Info() not found" despite the annotation genuinely existing
+             * (verified directly against swagger-php 7.10 - see docs/TECHNICAL_DEBT.md #5).
+             * `DocBlockAnnotationFactory` additionally requires `doctrine/annotations` to be
+             * installed (`DocBlockParser::isEnabled()` gates on `class_exists`) - re-added as a
+             * direct dependency for this reason, it is not dead weight.
              *
              * @see scan
              */
-            'analyser' => null,
+            'analyser' => new ReflectionAnalyser([
+                new AttributeAnnotationFactory,
+                new DocBlockAnnotationFactory,
+            ]),
 
             /**
              * analysis: defaults to a new \OpenApi\Analysis .

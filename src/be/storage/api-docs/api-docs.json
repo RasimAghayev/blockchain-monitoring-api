@@ -13,7 +13,448 @@
     ],
     "paths": {
         "/api": {},
-        "app": {},
+        "/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Exchange email/password for a JWT access token",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Authenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "result": {
+                                            "properties": {
+                                                "access_token": {
+                                                    "type": "string"
+                                                },
+                                                "token_type": {
+                                                    "type": "string",
+                                                    "example": "bearer"
+                                                },
+                                                "expires_in": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials"
+                    }
+                }
+            }
+        },
+        "/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get the authenticated user",
+                "operationId": "me",
+                "responses": {
+                    "200": {
+                        "description": "The authenticated user"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/v1/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Exchange a still-valid token for a new one",
+                "operationId": "refreshToken",
+                "responses": {
+                    "200": {
+                        "description": "A new access token"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/v1/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Invalidate the current token",
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "Logged out"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/v1/check/db": {
+            "get": {
+                "tags": [
+                    "Health Checks"
+                ],
+                "summary": "Check database connectivity",
+                "description": "Verifies the application can connect to the database",
+                "operationId": "checkDatabase",
+                "responses": {
+                    "200": {
+                        "description": "Database connection successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/check/db"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "Application is up and running, database connection is ok!"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Database connection failed"
+                    }
+                }
+            }
+        },
+        "/v1/check/health": {
+            "get": {
+                "tags": [
+                    "Health Checks"
+                ],
+                "summary": "Check application health",
+                "description": "Returns application health status",
+                "operationId": "checkHealth",
+                "responses": {
+                    "200": {
+                        "description": "Application is healthy",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/check/health"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "Application is up and running, health is ok!"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/check/static": {
+            "get": {
+                "tags": [
+                    "Health Checks"
+                ],
+                "summary": "Check static content",
+                "description": "Returns a static health status",
+                "operationId": "checkStatic",
+                "responses": {
+                    "200": {
+                        "description": "Static check successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/check/static"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/check/ip": {
+            "get": {
+                "tags": [
+                    "Health Checks"
+                ],
+                "summary": "Get server IP address",
+                "description": "Returns the server's public IP address and location info",
+                "operationId": "checkIp",
+                "responses": {
+                    "200": {
+                        "description": "IP address retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/check/ip"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "ip": {
+                                                    "type": "string",
+                                                    "example": "192.168.1.1"
+                                                },
+                                                "city": {
+                                                    "type": "string",
+                                                    "example": "Baku"
+                                                },
+                                                "region": {
+                                                    "type": "string",
+                                                    "example": "Baku"
+                                                },
+                                                "country": {
+                                                    "type": "string",
+                                                    "example": "AZ"
+                                                },
+                                                "loc": {
+                                                    "type": "string",
+                                                    "example": "40.3745,49.8556"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Failed to retrieve IP information"
+                    }
+                }
+            }
+        },
+        "/v1/health/live": {
+            "get": {
+                "tags": [
+                    "Health Checks"
+                ],
+                "summary": "Liveness probe",
+                "description": "Process is up and can serve HTTP. No dependency checks.",
+                "operationId": "healthLive",
+                "responses": {
+                    "200": {
+                        "description": "Process is alive",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/health/live"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "alive"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/health/ready": {
+            "get": {
+                "tags": [
+                    "Health Checks"
+                ],
+                "summary": "Readiness probe",
+                "description": "Checks DB (always) and Redis (only if configured as cache/queue driver) connectivity",
+                "operationId": "healthReady",
+                "responses": {
+                    "200": {
+                        "description": "Ready to serve traffic",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/health/ready"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "status": {
+                                                    "type": "string",
+                                                    "example": "ready"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "A required dependency is unreachable"
+                    }
+                }
+            }
+        },
         "/v1/tokens": {
             "get": {
                 "tags": [
@@ -598,13 +1039,711 @@
                     }
                 }
             }
+        },
+        "/v1/tokens/{address}/info": {
+            "get": {
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Get token information",
+                "description": "Returns token information for a given address",
+                "operationId": "getTokenInfo",
+                "parameters": [
+                    {
+                        "name": "address",
+                        "in": "path",
+                        "description": "Token address",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Ethereum"
+                                        },
+                                        "symbol": {
+                                            "type": "string",
+                                            "example": "ETH"
+                                        },
+                                        "total_supply": {
+                                            "type": "string",
+                                            "example": "115714953"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Token not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/v1/tokens/{address}/top-holders": {
+            "get": {
+                "tags": [
+                    "Tokens"
+                ],
+                "summary": "Get top token holders",
+                "description": "Returns top holders for a given token address",
+                "operationId": "getTopHolders",
+                "parameters": [
+                    {
+                        "name": "address",
+                        "in": "path",
+                        "description": "Token address",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token_address": {
+                                            "type": "string",
+                                            "example": "0x123456789abcdef..."
+                                        },
+                                        "top_holders": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "address": {
+                                                        "type": "string",
+                                                        "example": "0xabcdef123456..."
+                                                    },
+                                                    "balance": {
+                                                        "type": "string",
+                                                        "example": "1000000000000000000"
+                                                    },
+                                                    "percentage": {
+                                                        "type": "string",
+                                                        "example": "10.5"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Token not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                }
+            }
+        },
+        "/v1/transactions": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Get list of transactions",
+                "description": "Returns list of transactions",
+                "operationId": "getTransactionsList",
+                "parameters": [
+                    {
+                        "name": "include_tags",
+                        "in": "query",
+                        "description": "Include tags in the response",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "name[lk]",
+                        "in": "query",
+                        "description": "Search query [eq,lt,lte,gt,gte,ne,lk,ilk,nlk,inlk,bt,nbt,in,nin,json]",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "$ref": "#/components/schemas/TransactionCollection"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Store new transaction",
+                "description": "Returns transaction data",
+                "operationId": "storeTransaction",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StoreTransactionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "POST"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Transaction successfully created"
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/TransactionResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "POST"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string",
+                                                    "example": "Company information is not recorded."
+                                                }
+                                            }
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/transactions/{id}": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Get transaction information",
+                "description": "Returns transaction data",
+                "operationId": "getTransactionById",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Transaction id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions/1"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "POST"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Transaction successfully show: 10"
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/TransactionResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Resource Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions/1"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "example": "Resource not found: Transaction not found with ID: 10"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Update existing transaction",
+                "description": "Returns updated transaction data",
+                "operationId": "updateTransactionPut",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Transaction id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateTransactionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "PUT"
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "result": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "Transaction successfully created"
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/TransactionResource"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Resource Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions/1"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "example": "Resource not found: Transaction not found with ID: 10"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Delete existing transaction",
+                "description": "Deletes a record and returns no content",
+                "operationId": "deleteTransaction",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Transaction id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful operation"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Resource Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions/{id}"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "example": "Resource not found: Transaction not found with ID: 10"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Update existing transaction",
+                "description": "Returns updated transaction data",
+                "operationId": "updateTransactionPatch",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Transaction id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateTransactionRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TransactionResource"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Resource Not Found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-15T23:21:32+04:00"
+                                        },
+                                        "path": {
+                                            "type": "string",
+                                            "example": "api/v1/transactions/{id}"
+                                        },
+                                        "method": {
+                                            "type": "string",
+                                            "example": "GET"
+                                        },
+                                        "error": {
+                                            "type": "object",
+                                            "example": "Resource not found: Transaction not found with ID: 10"
+                                        },
+                                        "result": {
+                                            "type": "object",
+                                            "example": []
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity"
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
+            "LoginRequest": {
+                "title": "Login Request",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "admin@example.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "example": "admin123"
+                    }
+                },
+                "type": "object"
+            },
             "403Error": {
                 "properties": {
                     "result": {
+                        "description": "This class declares no route of its own - it exists only to hold reusable\n`@OA\\Schema` definitions referenced via `$ref` from real endpoint annotations\nelsewhere. It previously carried a stray `@OA\\PathItem(path=\"app\")` tag with\nno operations, which `l5-swagger:generate` turned into a bogus empty `\"app\"`\nentry in the generated OpenAPI `paths` object (confirmed by direct inspection\nof `storage/api-docs/api-docs.json` after fixing the classic-docblock scanning\nregression - see docs/TECHNICAL_DEBT.md #5). Removed: not a real path.",
                         "type": "array",
                         "items": {},
                         "example": []
@@ -863,6 +2002,203 @@
                     }
                 },
                 "type": "object"
+            },
+            "StoreTransactionRequest": {
+                "title": "Store Transaction Request",
+                "description": "Store Transaction request body data",
+                "required": [
+                    "transactionHash",
+                    "transactionFromAddress",
+                    "transactionAmount",
+                    "transactionGasFee"
+                ],
+                "properties": {
+                    "transactionHash": {
+                        "type": "string",
+                        "example": "0x9f2c1b7c9d4e5f60718293a4b5c6d7e8f9012345"
+                    },
+                    "transactionFromAddress": {
+                        "type": "string",
+                        "example": "0x1111111111111111111111111111111111111111"
+                    },
+                    "transactionToAddress": {
+                        "description": "Empty for a contract deployment, which has no recipient",
+                        "type": "string",
+                        "example": "0x2222222222222222222222222222222222222222"
+                    },
+                    "transactionAmount": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 1.5
+                    },
+                    "transactionGasFee": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 0.0004
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateTransactionRequest": {
+                "title": "Update Transaction Request",
+                "description": "Update Transaction request body data",
+                "properties": {
+                    "transactionHash": {
+                        "type": "string",
+                        "example": "0x9f2c1b7c9d4e5f60718293a4b5c6d7e8f9012345"
+                    },
+                    "transactionFromAddress": {
+                        "type": "string",
+                        "example": "0x1111111111111111111111111111111111111111"
+                    },
+                    "transactionToAddress": {
+                        "type": "string",
+                        "example": "0x2222222222222222222222222222222222222222"
+                    },
+                    "transactionAmount": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 1.5
+                    },
+                    "transactionGasFee": {
+                        "type": "number",
+                        "format": "double",
+                        "example": 0.0004
+                    }
+                },
+                "type": "object"
+            },
+            "TransactionCollection": {
+                "title": "Transaction Collection",
+                "description": "Transaction collection",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                        "example": "Transaction successfully full list."
+                    },
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/TransactionResource"
+                        }
+                    },
+                    "meta": {
+                        "properties": {
+                            "current_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "from": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "last_page": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "per_page": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "to": {
+                                "type": "integer",
+                                "example": 15
+                            },
+                            "total": {
+                                "type": "integer",
+                                "example": 50
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "links": {
+                        "properties": {
+                            "self": {
+                                "type": "string",
+                                "example": "http://example.com/api/transactions?page=1"
+                            },
+                            "first": {
+                                "type": "string",
+                                "example": "http://example.com/api/transactions?page=1"
+                            },
+                            "last": {
+                                "type": "string",
+                                "example": "http://example.com/api/transactions?page=4"
+                            },
+                            "prev": {
+                                "type": "string",
+                                "nullable": true
+                            },
+                            "next": {
+                                "type": "string",
+                                "example": "http://example.com/api/transactions?page=2"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "TransactionResource": {
+                "title": "Transaction Resource",
+                "description": "A transaction stored by the monitoring service",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "transactionHash": {
+                        "description": "The unique hash of the transaction on the chain",
+                        "type": "string",
+                        "example": "0x9f2c1b7c9d4e5f60718293a4b5c6d7e8f9012345"
+                    },
+                    "transactionFromAddress": {
+                        "description": "The address the transaction was sent from",
+                        "type": "string",
+                        "example": "0x1111111111111111111111111111111111111111"
+                    },
+                    "transactionToAddress": {
+                        "description": "The address the transaction was sent to. Empty for a contract deployment",
+                        "type": "string",
+                        "example": "0x2222222222222222222222222222222222222222"
+                    },
+                    "transactionAmount": {
+                        "description": "The transferred amount",
+                        "type": "number",
+                        "format": "double",
+                        "example": 1.5
+                    },
+                    "transactionGasFee": {
+                        "description": "The gas fee paid for the transaction",
+                        "type": "number",
+                        "format": "double",
+                        "example": 0.0004
+                    },
+                    "type": {
+                        "properties": {
+                            "value": {
+                                "type": "integer",
+                                "example": 1
+                            },
+                            "label": {
+                                "type": "string",
+                                "example": "Transfer"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-01-01 00:00:00"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2023-01-01 00:00:00"
+                    }
+                },
+                "type": "object"
             }
         },
         "securitySchemes": {
@@ -876,8 +2212,20 @@
     },
     "tags": [
         {
+            "name": "Auth",
+            "description": "JWT issuance for the `api` guard"
+        },
+        {
+            "name": "Health Checks",
+            "description": "System health and database connectivity checks"
+        },
+        {
             "name": "Tokens",
             "description": "API Endpoints of Tokens Management System"
+        },
+        {
+            "name": "Transactions",
+            "description": "API Endpoints of Transactions Management System"
         }
     ]
 }

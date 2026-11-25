@@ -7,7 +7,7 @@ balanslarını saxlayır, əməliyyatları isə xarici blockchain API-sindən ç
 
 | | |
 |---|---|
-| **Stack** | PHP 8.4 · Laravel 12 · PostgreSQL 16 · Redis · Horizon 5 · Sanctum 4 · JWT-auth 2 · l5-swagger 8.6 |
+| **Stack** | PHP 8.6 · Laravel 13 · PostgreSQL 19 · Redis (predis) · Horizon 5 · Sanctum 4 · JWT-auth 2 · l5-swagger 11.4 |
 | **Giriş nöqtəsi** | nginx → php-fpm → Laravel |
 | **İcra mühiti** | Yalnız Docker. Host toolchain lazım deyil |
 | **API bazası** | `http://localhost/api/v1` |
@@ -63,7 +63,7 @@ curl http://localhost/api/v1/check/health
 | `php` | `docker/php.Dockerfile` (`runtime`) | 9000 (daxili) | php-fpm, `www-data` |
 | `artisan` | `docker/php.Dockerfile` (`runtime`) | — | Tək çalışan CLI konteyneri |
 | `composer` | `docker/php.Dockerfile` (`cli`) | — | CLI konteyneri, `www-data` |
-| `pgsql` | `docker/postgres.Dockerfile` | 6432 | PostgreSQL 16 + `pg_cron`, `postgis`, `timescaledb` |
+| `pgsql` | `docker/postgres.Dockerfile` | 6432 | PostgreSQL 19 (heç bir əlavə extension yoxdur — `pg_cron`/`postgis`/`timescaledb` istifadəsiz idi, silindi) |
 | `redis` | `docker/redis.Dockerfile` | 8002 | Lokal build — registry image işlədilmir |
 | `test` | `docker/php.Dockerfile` (`test`) | — | `profiles: ["test"]` |
 | `lint` | `docker/php.Dockerfile` (`test`) | — | `profiles: ["test"]` |
@@ -84,13 +84,29 @@ gedir, `var/` isə həm `.gitignore`, həm `.dockerignore` ilə bağlıdır.
 ## Endpoint-lər
 
 Bütün endpoint-lər `/api/v1` prefiksi altında və `throttle:60,1` ilə mühafizə olunur.
-Cavablar `ApiBaseResponse` formatındadır:
+`/tokens/*` və `/transactions/*` əlavə olaraq `auth:api` (JWT) tələb edir —
+token olmadan 401. Cavablar `ApiBaseResponse` formatındadır:
 
 ```json
 { "timestamp": "...", "path": "...", "method": "...", "error": null, "result": {} }
 ```
 
 Sorğu və cavb formatlarının təfərrüatlı təsviri: [docs/api-contract.md](docs/api-contract.md).
+
+### Auth
+
+| Metod | Yol | Qaydası |
+|---|---|---|
+| POST | `/auth/login` | `email`+`password` ilə JWT access token al |
+| GET | `/auth/me` | Autentifikasiya olunmuş istifadəçi (`auth:api`) |
+| POST | `/auth/refresh` | Hələ keçərli tokeni yenisi ilə dəyiş (`auth:api`) |
+| POST | `/auth/logout` | Cari tokeni blacklist et (`auth:api`) |
+
+Hər `/tokens/*` və `/transactions/*` çağırışı `Authorization: Bearer <token>`
+başlığı tələb edir. `TokenPolicy`/`TransactionPolicy` bu domendə sahiblik modeli
+olmadığı üçün hər autentifikasiya olunmuş istifadəçiyə bütün əməliyyatlara icazə
+verir (bax [docs/adr/0001-flat-authorization.md](docs/adr/0001-flat-authorization.md)) —
+yəni 403 yox, yalnız 401 (token yoxdur/yanlışdır) mümkündür.
 
 ### Tokens
 
@@ -132,8 +148,11 @@ Xarici blockchain API-si `API_BLOCKCHAIN_URL` mühit dəyişəni ilə təyin olu
 | GET | `/check/health` | Tətbiq sağlamlığı |
 | GET | `/check/static` | Statik fayllar |
 | GET | `/check/ip` | Sorğunun IP-si |
-| GET | `/check/clear_cache` | Keşi təmizlə |
+| GET | `/health/live` | Liveness probe — asılılıq yoxlamır (bax [docs/adr/0003](docs/adr/0003-liveness-readiness-split.md)) |
+| GET | `/health/ready` | Readiness probe — DB (və konfiqurasiya olunubsa Redis) əlçatanlığını yoxlayır, uyğunsuzluqda 503 |
 
+`check/clear_cache` artıq mövcud deyil — keşi `make cache-clear` ilə təmizləyin
+(bax [docs/adr/0002](docs/adr/0002-remove-live-cache-clear-endpoint.md)).
 Laravel-ın öz sağlamlıq marşrutu `/up`-dir (`bootstrap/app.php`).
 
 ---

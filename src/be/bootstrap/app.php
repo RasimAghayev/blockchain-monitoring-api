@@ -2,11 +2,9 @@
 
 use App\Http\Middlewares\CompressResponse;
 use App\Http\Middlewares\ContentSecurityPolicyMiddleware;
-// ErrorMethodNotAllowedResponse exists but is not wired up yet. Keep it out of the
-// group below: a comment inside a group-use list is valid PHP but breaks the Pint
-// tokenizer, which reported the whole file as a syntax error.
 use App\Http\Middlewares\SecurityHeaders;
 use App\Http\Responses\ErrorInternalServerErrorResponse;
+use App\Http\Responses\ErrorMethodNotAllowedResponse;
 use App\Http\Responses\ErrorNotFoundResponse;
 use App\Http\Responses\ErrorTokenBlacklisted;
 use App\Http\Responses\ErrorTokenExpired;
@@ -36,6 +34,7 @@ use phpOpenSourceSaver\JWTAuth\Exceptions\TokenBlacklistedException;
 use phpOpenSourceSaver\JWTAuth\Exceptions\TokenExpiredException;
 use phpOpenSourceSaver\JWTAuth\Exceptions\TokenInvalidException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
@@ -47,7 +46,35 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up'
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Global Middleware
+        // This app has no web login page (routes/web.php only serves the
+        // default welcome view) — it is a pure JSON API. The framework's
+        // own default guest-redirect, registered unconditionally in
+        // Illuminate\Foundation\Configuration\ApplicationBuilder::withMiddleware()
+        // as `redirectGuestsTo(fn () => route('login'))`, assumes a named
+        // 'login' route exists. Without this override, every unauthenticated
+        // request to an `auth:api`-gated route that doesn't send an
+        // `Accept: application/json` header (so `expectsJson()` is false —
+        // true for a plain `curl` call, false for a browser `fetch()`/axios
+        // client that does send it) hits that default: `route('login')`
+        // throws Symfony\Component\Routing\Exception\RouteNotFoundException,
+        // which is caught by the renderable() handler below and mapped to a
+        // 404 — silently masking what should be a 401. This was only ever
+        // exercised once `auth:api` gating was actually turned on this phase
+        // (docs/adr/0001-flat-authorization.md); PHPUnit's test HTTP client
+        // always sends `Accept: application/json`, which is why the bug was
+        // invisible to the test suite and only surfaced against the real
+        // nginx+php-fpm stack. Always returning null means
+        // AuthenticationException's redirect path is always null, so it
+        // reaches ErrorUnauthenticatedResponse below as intended.
+        $middleware->redirectGuestsTo(fn () => null);
+
+        // Global Middleware. SecurityHeaders and ContentSecurityPolicyMiddleware
+        // both only ever set response headers, so they belong here rather than in
+        // a named group that has to be remembered on every route list: this way
+        // they also cover non-'api'-prefixed responses (e.g. the L5Swagger docs
+        // UI, which registers its own routes outside our 'api' group) without
+        // needing to be attached twice. ContentSecurityPolicyMiddleware is
+        // already path-aware internally (looser CSP under api/documentation*).
         $middleware->use([
             TrustProxies::class,
             HandleCors::class,
@@ -55,7 +82,8 @@ return Application::configure(basePath: dirname(__DIR__))
             ValidatePostSize::class,
             TrimStrings::class,
             ConvertEmptyStringsToNull::class,
-            //            SecurityHeaders::class,
+            SecurityHeaders::class,
+            ContentSecurityPolicyMiddleware::class,
         ]);
 
         // API Middleware Group. The group is defined once: a second definition
@@ -66,11 +94,6 @@ return Application::configure(basePath: dirname(__DIR__))
             ThrottleRequests::class.':60,1',
             EnsureFrontendRequestsAreStateful::class,
             CompressResponse::class,
-        ]);
-
-        // Content Security Policy Middleware Group
-        $middleware->group('csp', [
-            ContentSecurityPolicyMiddleware::class,
         ]);
 
         // Route Specific Middleware Aliases
@@ -90,7 +113,13 @@ return Application::configure(basePath: dirname(__DIR__))
                     $e instanceof RouteNotFoundException => ErrorNotFoundResponse::make(),
                     $e instanceof NotFoundHttpException => ErrorNotFoundResponse::make(),
                     $e instanceof AuthenticationException => ErrorUnauthenticatedResponse::make(),
-                    //                    $e instanceof BadMethodCallException => ErrorMethodNotAllowedResponse::make(),
+                    // Laravel's router throws this (not BadMethodCallException, which is
+                    // a plain PHP "no such method" error, not an HTTP concern) when a
+                    // route path matches but the HTTP verb doesn't — e.g. DELETE on a
+                    // path that only defines GET/POST. Previously unmapped, so a real
+                    // 405 fell through to the generic 500 branch below with a
+                    // misleadingly generic message.
+                    $e instanceof MethodNotAllowedHttpException => ErrorMethodNotAllowedResponse::make(),
                     $e instanceof ValidationException => ErrorValidationResponse::make($e->errors()),
                     $e instanceof ThrottleRequestsException => ErrorTooManyAttemptsResponse::make(),
                     $e instanceof TokenExpiredException => ErrorTokenExpired::make(),

@@ -48,4 +48,29 @@ class AuthorizationTest extends TestCase
     {
         $this->json($method, $uri)->assertStatus(401);
     }
+
+    /**
+     * Regression test for a real-stack-only bug: $this->json() above forces
+     * an `Accept: application/json` header, which makes
+     * Illuminate\Http\Request::expectsJson() return true, which short-circuits
+     * Illuminate\Auth\Middleware\Authenticate::unauthenticated() so it never
+     * calls redirectTo() at all — meaning every case above passed even while
+     * a plain client (curl with no Accept header, or any client that only
+     * sends the browser-default `Accept: text/html,...`) hit a live 404
+     * instead of a 401 on these same routes. With no Accept header forced
+     * here, expectsJson() is false, so this exercises the exact path the
+     * data-provider tests above cannot reach: redirectTo() runs,
+     * historically called the framework's default
+     * `redirectGuestsTo(fn () => route('login'))` and threw
+     * RouteNotFoundException (this is an API-only app — routes/web.php has
+     * no 'login' route), which bootstrap/app.php's renderable() maps to a
+     * 404, masking the real 401. Fixed by overriding
+     * `redirectGuestsTo(fn () => null)` in bootstrap/app.php so the redirect
+     * target is always null regardless of expectsJson().
+     */
+    public function test_it_rejects_an_unauthenticated_request_without_a_json_accept_header(): void
+    {
+        $this->get('/api/v1/tokens', ['Accept' => 'text/html'])
+            ->assertStatus(401);
+    }
 }

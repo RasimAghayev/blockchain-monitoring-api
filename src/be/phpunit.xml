@@ -3,7 +3,7 @@
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
          cacheDirectory=".phpunit.cache"
-         cacheResult="false"
+         recordTestRunHistory="false"
          colors="true"
          displayDetailsOnTestsThatTriggerDeprecations="true"
          displayDetailsOnTestsThatTriggerErrors="true"
@@ -40,6 +40,11 @@
         <env name="CACHE_STORE" value="array" force="true"/>
         <env name="DB_CONNECTION" value="sqlite" force="true"/>
         <env name="DB_DATABASE" value=":memory:" force="true"/>
+        <!-- Test-only signing key for php-open-source-saver/jwt-auth (the `api`
+             guard, re-enabled this phase - docs/adr/0001-flat-authorization.md).
+             Not a real secret: 32 random bytes, used only inside this ephemeral
+             test process, never shared with any running environment. -->
+        <env name="JWT_SECRET" value="test-only-insecure-secret-do-not-use-in-any-real-environment" force="true"/>
         <env name="LOG_CHANNEL" value="null" force="true"/>
         <env name="MAIL_MAILER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false" force="true"/>

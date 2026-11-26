@@ -3,7 +3,7 @@
 # Targets: runtime (php-fpm), cli (composer/artisan php-cli), test (phpunit/pint).
 # Same pinned PHP/Composer bases as previous root Dockerfiles.
 
-FROM php:8.4-fpm@sha256:212c3c9fc09d58f6b1a12b0b4a6a90fd44a209299a67633c2bccbc1dd53c55e0 AS runtime-build
+FROM php:8.4-fpm@sha256:89598ce2b089ebe8dd3772f7188a2d47300145fbcea6578de2db96c8e8f026bb AS runtime-build
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpng-dev \
@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-FROM php:8.4-fpm@sha256:212c3c9fc09d58f6b1a12b0b4a6a90fd44a209299a67633c2bccbc1dd53c55e0 AS runtime
+FROM php:8.4-fpm@sha256:89598ce2b089ebe8dd3772f7188a2d47300145fbcea6578de2db96c8e8f026bb AS runtime
 COPY --from=runtime-build /usr/local/bin/composer /usr/local/bin/composer
 COPY --from=runtime-build /usr/local/lib/php/extensions/ /usr/local/lib/php/extensions/
 COPY --from=runtime-build /usr/local/etc/php/conf.d/ /usr/local/etc/php/conf.d/
@@ -54,7 +54,7 @@ USER www-data
 WORKDIR /app
 CMD ["composer"]
 
-FROM php:8.4-fpm@sha256:212c3c9fc09d58f6b1a12b0b4a6a90fd44a209299a67633c2bccbc1dd53c55e0 AS test
+FROM php:8.4-fpm@sha256:89598ce2b089ebe8dd3772f7188a2d47300145fbcea6578de2db96c8e8f026bb AS test
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libpng-dev libpq-dev libonig-dev libxml2-dev libzip-dev \
     libfreetype6-dev libjpeg62-turbo-dev libsqlite3-dev zip curl unzip git && \
